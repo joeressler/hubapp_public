@@ -1,0 +1,197 @@
+body {
+    /*background-color: #3B7B79;*/
+    background-image: linear-gradient(0turn, #19A8BA, forestgreen) !important;
+    background-repeat: repeat-x !important;
+    background-position: right top !important;
+    background-attachment: fixed !important;
+    animation: bodyFrames 100s ease-in-out 0s infinite alternate both !important;
+
+}
+@keyframes bodyFrames {
+    0% {background-image: linear-gradient(0.00turn, #19A8BA, forestgreen)}
+    1% {background-image: linear-gradient(0.01turn, #19A8BA, forestgreen);}
+    2% {background-image: linear-gradient(0.02turn, #19A8BA, forestgreen);}
+    3% {background-image: linear-gradient(0.03turn, #19A8BA, forestgreen);}
+    4% {background-image: linear-gradient(0.04turn, #19A8BA, forestgreen);}
+    5% {background-image: linear-gradient(0.05turn, #19A8BA, forestgreen);}
+    6% {background-image: linear-gradient(0.06turn, #19A8BA, forestgreen);}
+    7% {background-image: linear-gradient(0.07turn, #19A8BA, forestgreen);}
+    8% {background-image: linear-gradient(0.08turn, #19A8BA, forestgreen);}
+    9% {background-image: linear-gradient(0.09turn, #19A8BA, forestgreen);}
+    10% {background-image: linear-gradient(0.10turn, #19A8BA, forestgreen);}
+    11% {background-image: linear-gradient(0.11turn, #19A8BA, forestgreen);}
+    12% {background-image: linear-gradient(0.12turn, #19A8BA, forestgreen);}
+    13% {background-image: linear-gradient(0.13turn, #19A8BA, forestgreen);}
+    14% {background-image: linear-gradient(0.14turn, #19A8BA, forestgreen);}
+    15% {background-image: linear-gradient(0.15turn, #19A8BA, forestgreen);}
+    16% {background-image: linear-gradient(0.16turn, #19A8BA, forestgreen);}
+    17% {background-image: linear-gradient(0.17turn, #19A8BA, forestgreen);}
+    18% {background-image: linear-gradient(0.18turn, #19A8BA, forestgreen);}
+    19% {background-image: linear-gradient(0.19turn, #19A8BA, forestgreen);}
+    20% {background-image: linear-gradient(0.20turn, #19A8BA, forestgreen);}
+    21% {background-image: linear-gradient(0.21turn, #19A8BA, forestgreen);}
+    22% {background-image: linear-gradient(0.22turn, #19A8BA, forestgreen);}
+    23% {background-image: linear-gradient(0.23turn, #19A8BA, forestgreen);}
+    24% {background-image: linear-gradient(0.24turn, #19A8BA, forestgreen);}
+    25% {background-image: linear-gradient(0.25turn, #19A8BA, forestgreen);}
+    26% {background-image: linear-gradient(0.26turn, #19A8BA, forestgreen);}
+    27% {background-image: linear-gradient(0.27turn, #19A8BA, forestgreen);}
+    28% {background-image: linear-gradient(0.28turn, #19A8BA, forestgreen);}
+    29% {background-image: linear-gradient(0.29turn, #19A8BA, forestgreen);}
+    30% {background-image: linear-gradient(0.30turn, #19A8BA, forestgreen);}
+    31% {background-image: linear-gradient(0.31turn, #19A8BA, forestgreen);}
+    32% {background-image: linear-gradient(0.32turn, #19A8BA, forestgreen);}
+    33% {background-image: linear-gradient(0.33turn, #19A8BA, forestgreen);}
+    34% {background-image: linear-gradient(0.34turn, #19A8BA, forestgreen);}
+    35% {background-image: linear-gradient(0.35turn, #19A8BA, forestgreen);}
+    36% {background-image: linear-gradient(0.36turn, #19A8BA, forestgreen);}
+    37% {background-image: linear-gradient(0.37turn, #19A8BA, forestgreen);}
+    38% {background-image: linear-gradient(0.38turn, #19A8BA, forestgreen);}
+    39% {background-image: linear-gradient(0.39turn, #19A8BA, forestgreen);}
+    40% {background-image: linear-gradient(0.40turn, #19A8BA, forestgreen);}
+    41% {background-image: linear-gradient(0.41turn, #19A8BA, forestgreen);}
+    42% {background-image: linear-gradient(0.42turn, #19A8BA, forestgreen);}
+    43% {background-image: linear-gradient(0.43turn, #19A8BA, forestgreen);}
+    44% {background-image: linear-gradient(0.44turn, #19A8BA, forestgreen);}
+    45% {background-image: linear-gradient(0.45turn, #19A8BA, forestgreen);}
+    46% {background-image: linear-gradient(0.46turn, #19A8BA, forestgreen);}
+    47% {background-image: linear-gradient(0.47turn, #19A8BA, forestgreen);}
+    48% {background-image: linear-gradient(0.48turn, #19A8BA, forestgreen);}
+    49% {background-image: linear-gradient(0.49turn, #19A8BA, forestgreen);}
+    50% {background-image: linear-gradient(0.50turn, #19A8BA, forestgreen);}
+    51% {background-image: linear-gradient(0.51turn, #19A8BA, forestgreen);}
+    52% {background-image: linear-gradient(0.52turn, #19A8BA, forestgreen);}
+    53% {background-image: linear-gradient(0.53turn, #19A8BA, forestgreen);}
+    54% {background-image: linear-gradient(0.54turn, #19A8BA, forestgreen);}
+    55% {background-image: linear-gradient(0.55turn, #19A8BA, forestgreen);}
+    56% {background-image: linear-gradient(0.56turn, #19A8BA, forestgreen);}
+    57% {background-image: linear-gradient(0.57turn, #19A8BA, forestgreen);}
+    58% {background-image: linear-gradient(0.58turn, #19A8BA, forestgreen);}
+    59% {background-image: linear-gradient(0.59turn, #19A8BA, forestgreen);}
+    60% {background-image: linear-gradient(0.60turn, #19A8BA, forestgreen);}
+    61% {background-image: linear-gradient(0.61turn, #19A8BA, forestgreen);}
+    62% {background-image: linear-gradient(0.62turn, #19A8BA, forestgreen);}
+    63% {background-image: linear-gradient(0.63turn, #19A8BA, forestgreen);}
+    64% {background-image: linear-gradient(0.64turn, #19A8BA, forestgreen);}
+    65% {background-image: linear-gradient(0.65turn, #19A8BA, forestgreen);}
+    66% {background-image: linear-gradient(0.66turn, #19A8BA, forestgreen);}
+    67% {background-image: linear-gradient(0.67turn, #19A8BA, forestgreen);}
+    68% {background-image: linear-gradient(0.68turn, #19A8BA, forestgreen);}
+    69% {background-image: linear-gradient(0.69turn, #19A8BA, forestgreen);}
+    70% {background-image: linear-gradient(0.70turn, #19A8BA, forestgreen);}
+    71% {background-image: linear-gradient(0.71turn, #19A8BA, forestgreen);}
+    72% {background-image: linear-gradient(0.72turn, #19A8BA, forestgreen);}
+    73% {background-image: linear-gradient(0.73turn, #19A8BA, forestgreen);}
+    74% {background-image: linear-gradient(0.74turn, #19A8BA, forestgreen);}
+    75% {background-image: linear-gradient(0.75turn, #19A8BA, forestgreen);}
+    76% {background-image: linear-gradient(0.76turn, #19A8BA, forestgreen);}
+    77% {background-image: linear-gradient(0.77turn, #19A8BA, forestgreen);}
+    78% {background-image: linear-gradient(0.78turn, #19A8BA, forestgreen);}
+    79% {background-image: linear-gradient(0.79turn, #19A8BA, forestgreen);}
+    80% {background-image: linear-gradient(0.80turn, #19A8BA, forestgreen);}
+    81% {background-image: linear-gradient(0.81turn, #19A8BA, forestgreen);}
+    82% {background-image: linear-gradient(0.82turn, #19A8BA, forestgreen);}
+    83% {background-image: linear-gradient(0.83turn, #19A8BA, forestgreen);}
+    84% {background-image: linear-gradient(0.84turn, #19A8BA, forestgreen);}
+    85% {background-image: linear-gradient(0.85turn, #19A8BA, forestgreen);}
+    86% {background-image: linear-gradient(0.86turn, #19A8BA, forestgreen);}
+    87% {background-image: linear-gradient(0.87turn, #19A8BA, forestgreen);}
+    88% {background-image: linear-gradient(0.88turn, #19A8BA, forestgreen);}
+    89% {background-image: linear-gradient(0.89turn, #19A8BA, forestgreen);}
+    90% {background-image: linear-gradient(0.90turn, #19A8BA, forestgreen);}
+    91% {background-image: linear-gradient(0.91turn, #19A8BA, forestgreen);}
+    92% {background-image: linear-gradient(0.92turn, #19A8BA, forestgreen);}
+    93% {background-image: linear-gradient(0.93turn, #19A8BA, forestgreen);}
+    94% {background-image: linear-gradient(0.94turn, #19A8BA, forestgreen);}
+    95% {background-image: linear-gradient(0.95turn, #19A8BA, forestgreen);}
+    96% {background-image: linear-gradient(0.96turn, #19A8BA, forestgreen);}
+    97% {background-image: linear-gradient(0.97turn, #19A8BA, forestgreen);}
+    98% {background-image: linear-gradient(0.98turn, #19A8BA, forestgreen);}
+    99% {background-image: linear-gradient(0.99turn, #19A8BA, forestgreen);}
+    100% {background-image: linear-gradient(1.00turn, #19A8BA, forestgreen);}
+}
+
+tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+
+
+.button {
+    background-color: #04AA6D;
+    border: black solid 1px;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+table, th, td {
+
+}
+caption {
+    color: white;
+}
+
+#main_content {
+    padding: 10px;
+    color: white;
+    font-size: 20px;
+    font-family: "Arial", sans-serif;
+
+}
+
+#question {
+    margin-bottom: 10px;
+
+}
+
+#answer {
+    padding: 10px;
+    max-width: 25%;
+    background-color: teal;
+    color: azure;
+    border: 3px ridge floralwhite;
+}
+
+textarea,
+input {
+    background-color: #808080;
+    color:floralwhite;
+}
+
+#search_form_questions {
+    margin-bottom: 10px;
+}
+
+.navbar {
+    margin-bottom: 0;
+    font-weight: bold;
+}
+
+a {
+    color: floralwhite;
+    text-decoration: underline;
+}
+
+.nav-link {
+    font-size: 18px;
+
+}
+
+.field_input {
+    width: 150px;
+    float:left;
+}
+
+.field_label {
+    width: 250px;
+    float:left;
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+    border-color: black;
+    background-color: floralwhite;
+}

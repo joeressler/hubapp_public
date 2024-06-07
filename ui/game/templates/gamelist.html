@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Joseph Ressler's Portfolio{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript">
+    </script>
+{% endblock %}
+{% block page_content %}
+    <div class="container mt-5 px-2">
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+
+            <div class="position-relative">
+                <span class="position-absolute search"><i class="fa fa-search"></i></span>
+                <input class="form-control w-100" placeholder="Search by order#, name...">
+            </div>
+
+            <div class="px-2">
+
+                <span>Filters <i class="fa fa-angle-down"></i></span>
+                <i class="fa fa-ellipsis-h ms-3"></i>
+            </div>
+
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-responsive table-borderless">
+            <caption>Here is a list of games I have rated along with my 100% status in them and the game's average user rating.</caption>
+                <tbody>
+                <tr style="color:white">
+                    <th></th>
+                    <th>Game Name</th>
+                    <th>Joseph's Score</th>
+                    <th>Has Joseph fullcleared?</th>
+                    <th>Average User Score</th>
+                    <th>Number of user Fullclears</th>
+                    <th>User Ratings</th>
+                    <th>Developer</th>
+                </tr>
+                    {% for row in rows %}
+                         <tr >
+                             <td><a href="{{ url_for("game.game_rating", game_id = row.get("id")) }}">Rate this game</a></td>
+                             <td>{{ row.get("name") }}</td>
+                             <td>{{ row.get("score") }}</td>
+                             <td>
+                                 {% if row.get("fullclear") == 0 %}
+                                     {{ "No" }}
+                                 {% elif row.get("fullclear") == 1 %}
+                                     {{ "Yes" }}
+                                 {% endif %}
+                             </td>
+                             <td>{{ row.get("avg_score") }}</td>
+                             <td>{{ row.get("fullclear_count") }}</td>
+                             <td>{{ row.get("rating_count") }}</td>
+                             <td>{{ row.get("developer") }}</td>
+                         </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

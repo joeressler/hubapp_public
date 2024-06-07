@@ -1,0 +1,105 @@
+{# ``base.html`` is the template all our other templates derive from. While
+   Flask-Bootstrap ships with its own base, it is good form to create a custom
+   one for our app, as it allows customizing some aspects.
+
+   Deriving from bootstrap/base.html gives us a basic page scaffoling.
+
+   You can find additional information about template inheritance at
+
+   http://jinja.pocoo.org/docs/templates/#template-inheritance
+#}
+{%- extends "bootstrap/base.html" %}
+
+{# We also set a default title, usually because we might forget to set one.
+   In our sample app, we will most likely just opt not to change it #}
+{% block title %}Joseph Ressler's Portfolio{% endblock %}
+
+{% with msg = get_flashed_messages(with_categories=True) %}
+    {% if msg %}
+        {% for category, message in msg %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <strong>{{ message }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+
+{# While we are at it, we also enable fixes for legacy browsers. First we
+   import the necessary macros: #}
+{% import "bootstrap/fixes.html" as fixes %}
+
+{# Then, inside the head block, we apply these. To not replace the header,
+   ``super()`` is used: #}
+{% block head %}
+{{super()}}
+{#- Docs: http://pythonhosted.org/Flask-Bootstrap/macros.html#fixes
+   The sample application already contains the required static files. #}
+{{fixes.ie8()}}
+
+    {# Adding our own CSS files is also done here. Check the documentation at
+   http://pythonhosted.org/Flask-Bootstrap/basic-usage.html#available-blocks
+   for an overview. #}
+    {% block styles -%}
+        {{super()}}  {# do not forget to call super or Bootstrap's own stylesheets
+                        will disappear! #}
+        <link rel="stylesheet" type="text/css"
+              href="{{url_for('static', filename='app.css')}}">
+    {% endblock %}
+
+{% endblock %}
+{# Finally, round things out with navigation #}
+{% block navbar %}
+    {#{{nav.frontend_top.render()}} #}
+    <style>
+        td,th{padding:2px}
+    </style>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for("portfolio.portfolio_home") }}">Joseph Ressler's Portfolio</a>
+
+            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <div class="navbar-collapse collapse" id="navbarText">
+                <ul class="nav navbar-nav mr-auto">
+                    <li class="nav-link {{ "active" if request.path.startswith("/game") }}"><a href="{{ url_for('game.index') }}" >Game List</a></li>
+                    <li class="nav-link {{ "active" if request.path.startswith("/chat") }}"><a href="{{ url_for('chat.chat_home') }}" >World Of Warships FAQ Bot</a></li>
+
+
+                {% if g.user %}
+                    <li class="nav-link {{ "active" if request.path.startswith("/game") }}"><span>{{ g.user['username'] }}</span>
+                    <li class="nav-link {{ "active" if request.path.startswith("/game") }}"><a href="{{ url_for('auth.logout') }}">Log Out</a>
+                {% else %}
+                    <li class="nav-link {{ "active" if request.path.startswith("/game") }}"><a href="{{ url_for('auth.login') }}">Log In</a>
+                {% endif %}
+            </ul>
+            </div>
+
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div id="main_content">
+        {% block page_content %}
+
+            {{ super() }}
+            <footer>
+                <p>&copy; 2024 Joseph A. Ressler</p>
+            </footer>
+            {% if error %}
+                <p class=error><strong>Error:</strong> {{ error }}
+            {% endif %}
+        {% endblock %}
+    </div>
+{% endblock %}
+
+
+
+
+
+

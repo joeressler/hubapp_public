@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block scripts %}
+    {{ super() }}
+{% endblock %}
+{% block page_content %}
+{% from "_form_helpers.html" import render_field, render_hidden_field %}
+    <h1>World of Warships Help Bot</h1>
+    <p>This chatbot is trained on the player support database for <a href="https://na.wargaming.net/support/en/products/wows/">World of Warships</a></p>
+    <p>Ask any question that you might be able to get help with, for example: "How do I join a clan?"</p>
+    <div id="chatbotform" style="height:100vh;">
+        <form action="{{ url_for('.chat_submit', _external=True) }}" id="chat_form" method="POST" role="form" name="search_form">
+            {{ render_hidden_field(form.csrf_token) }}
+            <div id="question">
+                {{ render_field(form.question) }}
+                <input type="submit" value="Submit question" name="submit" />
+            </div>
+
+            {% if answer %}
+                <div id="answer">
+                    {{ answer }}
+                </div>
+            {% endif %}
+            <!--<button type="button" id="saveform" name="Foo" value="Bar">I'm done.</button>-->
+
+        </form>
+    </div>
+
+{% endblock %}

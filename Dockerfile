@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-alpine
+FROM python:slim-bullseye
 
 # By default, listen on port 5000
 EXPOSE 5000

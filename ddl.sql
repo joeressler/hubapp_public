@@ -1,33 +1,50 @@
+DROP TABLE IF EXISTS gamedevs;
+
 CREATE TABLE `gamedevs` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=538 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
-CREATE TABLE `gamedb` (
+# DROP TABLE IF EXISTS games;
+CREATE TABLE `games` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `score` int NOT NULL,
-  `fullclear` tinyint DEFAULT NULL,
   `developer_id` int NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_UNIQUE` (`name`),
-  UNIQUE KEY `id_UNIQUE` (`id`),
-  KEY `developer_id_FOREIGN_KEY_idx` (`developer_id`) /*!80000 INVISIBLE */,
-  CONSTRAINT `developer_id_FOREIGN_KEY` FOREIGN KEY (`developer_id`) REFERENCES `gamedevs` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `developer_id_FOREIGN_KEY_idx` (`developer_id`),
+  CONSTRAINT `g_developer_id_FOREIGN_KEY` FOREIGN KEY (`developer_id`) REFERENCES `gamedevs` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=559 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 DROP TABLE IF EXISTS user;
 
-CREATE TABLE user (
-  id int NOT NULL AUTO_INCREMENT,
-  username varchar(255) UNIQUE NOT NULL,
-  password_hash varchar(255) NOT NULL,
-    PRIMARY KEY(`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `user` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+DROP TABLE IF EXISTS gameratings;
+
+CREATE TABLE `gameratings` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `game_id` int NOT NULL,
+  `score` int NOT NULL,
+  `fullclear` tinyint DEFAULT NULL,
+  `user_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `user_id_FOREIGN_KEY_idx` (`user_id`),
+  KEY `gr_game_id_FOREIGN_KEY_idx` (`game_id`),
+  CONSTRAINT `gr_game_id_FOREIGN_KEY` FOREIGN KEY (`game_id`) REFERENCES `games` (`id`),
+  CONSTRAINT `gr_user_id_FOREIGN_KEY` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 SELECT * from games;
 
@@ -885,3 +902,139 @@ INSERT INTO games (name, developer_id) VALUES ('Zenith: Nexus', (SELECT id FROM 
 -- Ziggurat 2
 INSERT INTO gamedevs (name) VALUES ('Milkstone Studios') ON DUPLICATE KEY UPDATE name=name;
 INSERT INTO games (name, developer_id) VALUES ('Ziggurat 2', (SELECT id FROM gamedevs WHERE name = 'Milkstone Studios')) ON DUPLICATE KEY UPDATE name=name;
+
+
+
+-- I WIPED THE ENTIRE GAMES, GAMEDEVS, AND GAMERATINGS
+SET FOREIGN_KEY_CHECKS = 0;
+-- Wipe gamedevs table and reset auto-increment
+TRUNCATE TABLE gamedevs;
+
+-- Wipe games table and reset auto-increment
+TRUNCATE TABLE games;
+
+TRUNCATE TABLE gameratings;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- readding top 30 games
+-- Among Us
+INSERT INTO gamedevs (name) VALUES ('Innersloth') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Among Us', (SELECT id FROM gamedevs WHERE name = 'Innersloth')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Apex Legends
+INSERT INTO gamedevs (name) VALUES ('Respawn Entertainment') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Apex Legends', (SELECT id FROM gamedevs WHERE name = 'Respawn Entertainment')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Battlefield 1
+INSERT INTO gamedevs (name) VALUES ('DICE') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Battlefield 1', (SELECT id FROM gamedevs WHERE name = 'DICE')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Battlefield 4
+INSERT INTO gamedevs (name) VALUES ('DICE') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Battlefield 4', (SELECT id FROM gamedevs WHERE name = 'DICE')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Battlefield V
+INSERT INTO gamedevs (name) VALUES ('DICE') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Battlefield V', (SELECT id FROM gamedevs WHERE name = 'DICE')) ON DUPLICATE KEY UPDATE name=name;
+
+-- BioShock
+INSERT INTO gamedevs (name) VALUES ('2K Boston') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('BioShock', (SELECT id FROM gamedevs WHERE name = '2K Boston')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Call of Duty
+INSERT INTO gamedevs (name) VALUES ('Infinity Ward') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Call of Duty', (SELECT id FROM gamedevs WHERE name = 'Infinity Ward')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Counter-Strike 2
+INSERT INTO gamedevs (name) VALUES ('Valve') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Counter-Strike 2', (SELECT id FROM gamedevs WHERE name = 'Valve')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Cyberpunk 2077
+INSERT INTO gamedevs (name) VALUES ('CD Projekt Red') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Cyberpunk 2077', (SELECT id FROM gamedevs WHERE name = 'CD Projekt Red')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Destiny 2
+INSERT INTO gamedevs (name) VALUES ('Bungie') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Destiny 2', (SELECT id FROM gamedevs WHERE name = 'Bungie')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Dota 2
+INSERT INTO gamedevs (name) VALUES ('Valve') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Dota 2', (SELECT id FROM gamedevs WHERE name = 'Valve')) ON DUPLICATE KEY UPDATE name=name;
+
+-- ELDEN RING
+INSERT INTO gamedevs (name) VALUES ('FromSoftware') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('ELDEN RING', (SELECT id FROM gamedevs WHERE name = 'FromSoftware')) ON DUPLICATE KEY UPDATE name=name;
+
+-- EVE Online
+INSERT INTO gamedevs (name) VALUES ('CCP Games') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('EVE Online', (SELECT id FROM gamedevs WHERE name = 'CCP Games')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Fallout 76
+INSERT INTO gamedevs (name) VALUES ('Bethesda Game Studios') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Fallout 76', (SELECT id FROM gamedevs WHERE name = 'Bethesda Game Studios')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Far Cry 5
+INSERT INTO gamedevs (name) VALUES ('Ubisoft Montreal') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Far Cry 5', (SELECT id FROM gamedevs WHERE name = 'Ubisoft Montreal')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Forza Horizon 5
+INSERT INTO gamedevs (name) VALUES ('Playground Games') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Forza Horizon 5', (SELECT id FROM gamedevs WHERE name = 'Playground Games')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Guild Wars 2
+INSERT INTO gamedevs (name) VALUES ('ArenaNet') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Guild Wars 2', (SELECT id FROM gamedevs WHERE name = 'ArenaNet')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Hades
+INSERT INTO gamedevs (name) VALUES ('Supergiant Games') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Hades', (SELECT id FROM gamedevs WHERE name = 'Supergiant Games')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Halo Infinite
+INSERT INTO gamedevs (name) VALUES ('343 Industries') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Halo Infinite', (SELECT id FROM gamedevs WHERE name = '343 Industries')) ON DUPLICATE KEY UPDATE name=name;
+
+-- League of Legends
+INSERT INTO gamedevs (name) VALUES ('Riot Games') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('League of Legends', (SELECT id FROM gamedevs WHERE name = 'Riot Games')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Monster Hunter: World
+INSERT INTO gamedevs (name) VALUES ('Capcom') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Monster Hunter: World', (SELECT id FROM gamedevs WHERE name = 'Capcom')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Paladins
+INSERT INTO gamedevs (name) VALUES ('Evil Mojo Games') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Paladins', (SELECT id FROM gamedevs WHERE name = 'Evil Mojo Games')) ON DUPLICATE KEY UPDATE name=name;
+
+-- PUBG: BATTLEGROUNDS
+INSERT INTO gamedevs (name) VALUES ('PUBG Corporation') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('PUBG: BATTLEGROUNDS', (SELECT id FROM gamedevs WHERE name = 'PUBG Corporation')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Red Dead Redemption 2
+INSERT INTO gamedevs (name) VALUES ('Rockstar Games') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Red Dead Redemption 2', (SELECT id FROM gamedevs WHERE name = 'Rockstar Games')) ON DUPLICATE KEY UPDATE name=name;
+
+-- RuneScape
+INSERT INTO gamedevs (name) VALUES ('Jagex') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('RuneScape', (SELECT id FROM gamedevs WHERE name = 'Jagex')) ON DUPLICATE KEY UPDATE name=name;
+
+-- SMITE
+INSERT INTO gamedevs (name) VALUES ('Hi-Rez Studios') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('SMITE', (SELECT id FROM gamedevs WHERE name = 'Hi-Rez Studios')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Subnautica
+INSERT INTO gamedevs (name) VALUES ('Unknown Worlds Entertainment') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Subnautica', (SELECT id FROM gamedevs WHERE name = 'Unknown Worlds Entertainment')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Team Fortress 2
+INSERT INTO gamedevs (name) VALUES ('Valve') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Team Fortress 2', (SELECT id FROM gamedevs WHERE name = 'Valve')) ON DUPLICATE KEY UPDATE name=name;
+
+-- Terraria
+INSERT INTO gamedevs (name) VALUES ('Re-Logic') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('Terraria', (SELECT id FROM gamedevs WHERE name = 'Re-Logic')) ON DUPLICATE KEY UPDATE name=name;
+
+-- World of Warcraft
+INSERT INTO gamedevs (name) VALUES ('Blizzard Entertainment') ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO games (name, developer_id) VALUES ('World of Warcraft', (SELECT id FROM gamedevs WHERE name = 'Blizzard Entertainment')) ON DUPLICATE KEY UPDATE name=name;

@@ -15,7 +15,6 @@ class LoginForm(FlaskForm):
         self.csrf_token.data = generate_csrf()
 
     returnURL = HiddenField()
-    email = StringField('Email', name="email", render_kw={"style": "height: 2.5ch; width: 30ch"})
     username = StringField('Username:', name="username", render_kw={"style": "height: 2.5ch; width: 30ch"})
     password = PasswordField('Password:', name="password", render_kw={"style": "height: 2.5ch; width: 30ch"})
     recaptcha = RecaptchaField()

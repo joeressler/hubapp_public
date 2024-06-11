@@ -1,5 +1,7 @@
 import openai
 import os.path
+
+from dotenv import find_dotenv, load_dotenv
 from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
@@ -9,10 +11,23 @@ from llama_index.core import (
 )
 import csv
 
-client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-openai.api_key = os.environ.get('OPENAI_API_KEY')
+load_dotenv(find_dotenv('.env'))
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+client = openai.OpenAI()
 
-csvfolderpath = "../documents/"
+key = "warcraft"
+
+
+
+if key == "wows":
+    csvfolderpath = "../documents/wows/"
+    PERSIST_DIR = "../storage/storage_wows"
+elif key == "warcraft":
+    csvfolderpath = "../documents/warcraft/"
+    PERSIST_DIR = "../storage/storage_warcraft"
+elif key == "lol":
+    csvfolderpath = "../documents/lol/"
+    PERSIST_DIR = "../storage/storage_lol"
 documents = []
 for filename in os.listdir(csvfolderpath):
     csvpath = (csvfolderpath + filename)
@@ -24,7 +39,7 @@ for filename in os.listdir(csvfolderpath):
             documents.append(document)
 
 index = VectorStoreIndex.from_documents(documents)
-PERSIST_DIR = "../storage"
+
 index.storage_context.persist(persist_dir=PERSIST_DIR)
 
 """else:

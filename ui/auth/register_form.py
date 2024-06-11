@@ -14,6 +14,8 @@ class RegisterForm(FlaskForm):
 
         self.csrf_token.data = generate_csrf()
 
+    returnURL = HiddenField()
+    email = StringField('Email', name="email", render_kw={"style": "height: 2.5ch; width: 30ch"})
     username = StringField('Username:', name="username")
     password = PasswordField('Password:\nMust be between 6 and 20 characters long, and contain at least 1 capital letter and 1 special character (!@#$%^&)', name="password")
     recaptcha = RecaptchaField()

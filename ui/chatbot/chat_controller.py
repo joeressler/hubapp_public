@@ -17,8 +17,16 @@ def chat_home():  # put application's code here
 
 @chat_blueprint.route('/chat/submit', methods=['POST'])
 def chat_submit():
+    augment = request.form.get("augment")
     question = request.form.get("question")
     form = BotForm()
-    answer = ChatBot.get_response(question)
+    answer = ChatBot.get_response(question, augment)
+    user_id = session.get('user_id')
+    if not user_id:
+        if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+            user_id = request.environ['REMOTE_ADDR']
+        else:
+            user_id = request.environ['HTTP_X_FORWARDED_FOR']
+    ChatBot.log(augment, question, answer, user_id)
     return render_template("chatbot.html", form=form, answer=answer)
 

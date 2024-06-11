@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
-
 {% block header %}
   <h1>{% block title %}Log In{% endblock %}</h1>
 {% endblock %}
-
 {% block page_content %}
     <h1>Log In</h1>
   {% from "_form_helpers.html" import render_field, render_hidden_field %}
@@ -11,15 +9,11 @@
         {{ render_hidden_field(form.csrf_token) }}
         {{ render_hidden_field(form.returnURL) }}
         <div id="login_form">
-            {{ render_field(form.email) }}
             {{ render_field(form.username) }}
             {{ render_field(form.password) }}
         </div>
         <input type="submit" value="Log In" name="submit" />
         <p>&nbsp;</p>
-        <p>>Register <a href="{{ url_for('auth.register') }}">here</a> if you don't already have an account.</p>
-
-        <!-- <button type="button" id="saveform" name="Foo" value="Bar">I'm done.</button> -->
-
+        <p>Register <a href="{{ url_for('auth.register', returnURL=form.returnURL) }}">here</a> if you don't already have an account.</p>
     </form>
 {% endblock %}

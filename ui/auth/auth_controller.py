@@ -2,14 +2,11 @@ import functools
 import os
 
 import requests
-from flask import Blueprint, jsonify, render_template, Response, request, session, redirect, url_for, flash, g, abort
-from flask_wtf import recaptcha
+from flask import Blueprint, render_template, request, session, redirect, url_for, flash, g, abort
 
-from ui import auth
-from modules.game_db import GameDB
 from modules.users import User
-from ui.auth.register_form import RegisterForm
 from ui.auth.login_form import LoginForm
+from ui.auth.register_form import RegisterForm
 
 auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth', template_folder='templates')
 
@@ -17,6 +14,7 @@ auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth', template_folder
 
 @auth_blueprint.route('/register', methods=['GET', 'POST'])
 def register():  # put application's code here
+    form = RegisterForm()
     if request.method == 'POST':
         response = request.form['g-recaptcha-response']
         try:
@@ -25,6 +23,9 @@ def register():  # put application's code here
                 abort(401)
         except Exception as e:
             print(f"failed to get reCaptcha: {e}")
+        returnURL = request.form.get("returnURL")
+        if not returnURL:
+            returnURL = url_for('portfolio.portfolio_home')
         email = request.form['email']
         username = request.form['username']
         password = request.form['password']
@@ -44,11 +45,15 @@ def register():  # put application's code here
             else:
                 temp = User(email, username, password)
                 temp.save()
-                return redirect(url_for('.login'))
+                return redirect(url_for(returnURL))
         flash(error)
-    form = RegisterForm()
+    elif request.method == 'GET':
+        returnURL = request.args.get("returnURL")
+        form.returnURL.data = returnURL
+
     if form.validate_on_submit():
         return "The form has been submitted. Success!"
+
     return render_template('register.html', form=form, site_key=os.environ.get('RECAPTCHA_PUBLIC_KEY'))
 
 

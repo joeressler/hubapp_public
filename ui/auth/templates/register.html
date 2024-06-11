@@ -23,6 +23,7 @@
     <!--<div class="g-recaptcha" data-sitekey="_your_site_key_" data-size="invisible"></div>-->
         {{ render_hidden_field(form.csrf_token) }}
         <div id="register_form">
+            {{ render_field(form.email) }}
             {{ render_field(form.username) }}
             {{ render_field(form.password) }}
             <br />

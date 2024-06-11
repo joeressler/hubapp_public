@@ -4,7 +4,7 @@ body {
     background-repeat: repeat-x !important;
     background-position: right top !important;
     background-attachment: fixed !important;
-    animation: bodyFrames 100s ease-in-out 0s infinite alternate both !important;
+    animation: bodyFrames 5s ease-in-out 0s infinite alternate both !important;
 
 }
 @keyframes bodyFrames {
@@ -160,6 +160,11 @@ textarea,
 input {
     background-color: #808080;
     color:floralwhite;
+    border: 3px ridge floralwhite;
+}
+
+.augment-boxes {
+    border: 3px ridge floralwhite;
 }
 
 #search_form_questions {
@@ -169,6 +174,15 @@ input {
 .navbar {
     margin-bottom: 0;
     font-weight: bold;
+
+}
+
+.ulnavbar {
+    display: flex; !important
+}
+
+.push {
+    margin-left: auto; !important
 }
 
 a {

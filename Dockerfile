@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:slim-bullseye
+FROM python:3.12.3-bullseye
 
 # By default, listen on port 5000
 EXPOSE 5000
@@ -7,17 +7,18 @@ EXPOSE 5000
 # Set the working directory in the container
 WORKDIR /app
 
-
-RUN set -e; \
-        apk add --no-cache --virtual .build-deps \
-                gcc \
-                build-base \
-                libc-dev \
-                linux-headers \
-                mariadb-dev \
-                python3-dev \
-                postgresql-dev \
-        ;
+#
+#RUN set -e; \
+#        apt-get add --no-cache --virtual .build-deps \
+#                gcc \
+#                build-base \
+#                libc-dev \
+#                linux-headers \
+#                mariadb-dev \
+#                python3-dev \
+#                postgresql-dev \
+#        ; \
+#
 # Copy the dependencies file to the working directory
 COPY requirements.txt .
 

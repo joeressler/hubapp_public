@@ -15,7 +15,7 @@ load_dotenv(find_dotenv('.env'))
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 client = openai.OpenAI()
 
-key = "warcraft"
+key = "lol"
 
 
 

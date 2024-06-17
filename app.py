@@ -5,6 +5,9 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from logging import FileHandler, WARNING
 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
 import os
 from dotenv import load_dotenv
 
@@ -21,6 +24,18 @@ app.register_blueprint(chat_blueprint)
 app.register_blueprint(portfolio_blueprint)
 app.register_blueprint(auth_blueprint)
 
+#"""
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=0.5,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=0.10,
+)
+#"""
 file_handler = FileHandler('errorlog.txt')
 file_handler.setLevel(WARNING)
 csrf = CSRFProtect()

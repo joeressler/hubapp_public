@@ -14,9 +14,9 @@ class GameDB:
                 cursor.execute(sql, (game_id, rating, fullclear, user_id))
             else:
                 sql = """UPDATE gameratings
-                         SET score = %s
+                         SET score = %s, fullclear = %s
                          WHERE user_id = %s AND game_id = %s"""
-                cursor.execute(sql, (rating, user_id, game_id))
+                cursor.execute(sql, (rating, fullclear, user_id, game_id))
             connection.commit()
 
     @staticmethod
@@ -76,7 +76,6 @@ class GameDB:
     def lookup_user_rating(game_id, user_id):
         with VConnection() as connection, VCursor(connection) as cursor:
             sql = "SELECT * FROM gamedb.gameratings WHERE game_id = %s AND user_id = %s"
-            print(sql)
             cursor.execute(sql, (game_id, user_id))
             row = VCursor.get_row_as_json(cursor)
             return row

@@ -101,15 +101,13 @@ class User:
                 return False
 
     @staticmethod
-    def get_user(id, check_author=True):
+    def get_user(id):
         with VConnection() as connection, VCursor(connection) as cursor:
             sql = "SELECT * FROM user WHERE id = %s LIMIT 1"
             cursor.execute(sql, (id,))
             row = VCursor.get_row_as_json(cursor)
             if row is None:
                 abort(404, f"User {id} not found")
-            if check_author and row['id'] != g.user['id']:
-                abort(403)
             return row
 
 

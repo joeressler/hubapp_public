@@ -24,7 +24,7 @@ def register():  # put application's code here
         except Exception as e:
             print(f"failed to get reCaptcha: {e}")
         returnURL = request.form.get("returnURL")
-        if not returnURL:
+        if not returnURL or returnURL == "/":
             returnURL = url_for('portfolio.portfolio_home')
         email = request.form['email']
         username = request.form['username']
@@ -45,7 +45,8 @@ def register():  # put application's code here
             else:
                 temp = User(email, username, password)
                 temp.save()
-                return redirect(url_for(returnURL))
+                returnURL = url_for(returnURL)
+                return redirect(returnURL)
         flash(error)
     elif request.method == 'GET':
         returnURL = request.args.get("returnURL")
@@ -63,8 +64,10 @@ def login():
     form = LoginForm()
     if request.method == 'POST':
         returnURL = request.form.get("returnURL")
-        if not returnURL:
+        print(returnURL)
+        if not returnURL or returnURL == "/":
             returnURL = url_for('portfolio.portfolio_home')
+        print(returnURL)
         username = request.form['username']
         password = request.form['password']
         error = None
@@ -86,11 +89,13 @@ def login():
 @auth_blueprint.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
-
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = User.lookupID(user_id)
+    if g.get('user') is None:
+        if user_id is not None:
+            g.user = User.get_user(user_id)
+        else:
+            g.user = None
+    elif user_id is None:
+        g.pop('user_id', None)
 
 @auth_blueprint.route('/logout')
 def logout():

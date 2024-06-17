@@ -12,6 +12,9 @@ game_blueprint = Blueprint('game', __name__, template_folder='templates')
 
 @game_blueprint.route('/game/list', methods=['GET'])
 def index():
+    #TODO Change how we check for if users have reviewed games or not
+    # Potentially add a field to users data of what games they've reviewed already
+    # I don't think checking as we go through each row is efficient enough, especially with a larger source.
     rows = GameDB.listgames()
     return render_template("gamelist.html", rows=rows)
 

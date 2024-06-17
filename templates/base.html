@@ -9,7 +9,6 @@
    http://jinja.pocoo.org/docs/templates/#template-inheritance
 #}
 {%- extends "bootstrap/base.html" %}
-
 {# We also set a default title, usually because we might forget to set one.
    In our sample app, we will most likely just opt not to change it #}
 {% block title %}Joseph Ressler's Portfolio{% endblock %}
@@ -43,6 +42,10 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+
 {#- Docs: http://pythonhosted.org/Flask-Bootstrap/macros.html#fixes
    The sample application already contains the required static files. #}
 {{fixes.ie8()}}
@@ -60,34 +63,66 @@
 {% endblock %}
 {# Finally, round things out with navigation #}
 {% block navbar %}
+
+
     {#{{nav.frontend_top.render()}} #}
     <style>
-        td,th{padding:2px}
+        td,th{/*padding:2px*/}
     </style>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for("portfolio.portfolio_home") }}">Joseph Ressler's Portfolio</a>
+    <nav class="navbar navbar-expand-lg" role="navigation" data-bs-theme="dark">
+        <div class="container-fluid">
+            <!-- Navbar brand (uncomment if needed) -->
+            <!-- <a class="navbar-brand" href="/">Navbar</a> -->
 
-            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+            <button class="navbar-toggler d-block d-lg-none d-xl-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1h15a.5.5 0 0 1 0 1H.5A.5.5 0 0 1 0 1.5zM0 7.5A.5.5 0 0 1 .5 7h15a.5.5 0 0 1 0 1H.5A.5.5 0 0 1 0 7.5zM.5 13a.5.5 0 0 1 0-1h15a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0 0z"/>
+                    </svg>
+                </span>
             </button>
-            <div class="navbar-collapse collapse" id="navbarText">
-                <ul class="nav navbar-nav mr-auto ulnavbar">
-                    <li class="nav-link {{ "active" if request.path.startswith("/game") }}"><a href="{{ url_for('game.index') }}" >Game List</a></li>
-                    <li class="nav-link {{ "active" if request.path.startswith("/chat") }}"><a href="{{ url_for('chat.chat_home') }}" >GPT 3.5 RAG LLM Bot</a></li>
 
-
-                {% if g.user %}
-                    <li class="nav-link push"><span>{{ g.user['username'] }}</span>
-                    <li class="nav-link push"><a href="{{ url_for('auth.logout') }}">Log Out</a>
-                {% else %}
-                    <li class="nav-link push"><a href="{{ url_for('auth.login') }}">Log In</a>
-                {% endif %}
-            </ul>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent" data-bs-theme="dark">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('portfolio.portfolio_home') }}">Home</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbardrop" role="button" data-bs-toggle="dropdown" aria-expanded="true">
+                            Important Links
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbardrop">
+                            <li><a class="dropdown-item" href="{{ url_for('static', filename='Ressler_Joseph_Resume.pdf') }}" target="_blank">Download my Resume</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="https://www.linkedin.com/in/joseph-ressler/" target="_blank">LinkedIn</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="https://github.com/joeressler?tab=repositories" target="_blank">GitHub</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="https://github.com/joeressler/hubapp_public" target="_blank">Repository for this Website</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.path.startswith('/game') }}" href="{{ url_for('game.index') }}">Game List</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.path.startswith('/chat') }}" href="{{ url_for('chat.chat_home') }}">GPT3.5 RAGLLM Bots</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    {% if g.user %}
+                        <li class="nav-item">
+                            <span class="navbar-text" id="user_welcome">Logged in as: {{ g.user['username'] }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
-
         </div>
     </nav>
 {% endblock %}
@@ -95,11 +130,17 @@
 {% block content %}
     <div id="main_content">
         {% block page_content %}
-
-            {{ super() }}
             <footer>
-                <p>&copy; 2024 Joseph A. Ressler</p>
+                <div id="footer">
+                    <p>&copy; 2024 Joseph A. Ressler</p>
+                    <p><a href="{{ url_for('static', filename='Ressler_Joseph_Resume.pdf')}}">Download my Resume</a></p>
+                    <p><a href="https://www.linkedin.com/in/joseph-ressler/" target="_blank">LinkedIn</a></p>
+                    <p><a href="https://github.com/joeressler?tab=repositories" target="_blank">GitHub</a></p>
+                    <p><a href="https://github.com/joeressler/hubapp_public" target="_blank">Repository for this Website</a></p>
+                </div>
             </footer>
+            {{ super() }}
+
             {% if error %}
                 <p class=error><strong>Error:</strong> {{ error }}
             {% endif %}

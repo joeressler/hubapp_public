@@ -5,57 +5,74 @@
 {% block page_content %}
 {% from "_form_helpers.html" import render_field, render_hidden_field %}
     <!--<div style="width:500px"></div>-->
-    <div id="pic" style="float:left; width:300px;">
-        <img src="{{url_for('static', filename='joseph.jpg')}}"
-             alt="This is a picture of Joseph A. Ressler."
-             width="300"
-        />
-        <p><a href="{{ url_for('static', filename='Ressler_Joseph_Resume.pdf')}}">Download my Resume</a></p>
-        <p><a href="https://www.linkedin.com/in/joseph-ressler/" target="_blank">LinkedIn</a></p>
-        <p><a href="https://github.com/joeressler?tab=repositories" target="_blank">GitHub</a></p>
-        <p><a href="https://github.com/joeressler/hubapp_public" target="_blank">Repository for this Website</a></p>
-    </div>
-    <div id="intro" style="float:left; width:700px; padding-left:50px;">
+    <div id="portFlexBox">
+        <div id="pic" class="div-portfolio">
+            <h1>Hi, I'm Joseph Ressler. I love programming, and I love game programming.</h1>
+            <p>Please enjoy this app, I built it to get more experience with Full Stack development.</p>
+            <div class="box-shadow">
+               <img src="{{url_for('static', filename='joseph.jpg')}}"
+                     alt="A picture of Joseph A. Ressler.";
+                />
+            </div>
+        </div>
+        <div id="intro" class="div-portfolio">
+                <h2>Here are some of the skills I’ve worked on to build this app.</h2>
+                <ul>
+                    <li>Developing Python Flask Apps
+                        <ul>
+                            <li>Writing Ajax calls to enable two-way communication in apps</li>
+                            <li>Using GitHub for source control</li>
+                            <li>Implemented two-way server-client communication using REST API calls</li>
+                            <li>Debugging live service applications</li>
+                        </ul>
+                    </li>
+                    <li>Architecting and maintaining SQL databases and connections
+                        <ul>
+                            <li>Creating & integrating SQLite databases</li>
+                            <li>Migrating databases to MySQL</li>
+                            <li>Setting up MySQL servers using AWS Lightsail</li>
+                        </ul>
+                    </li>
 
-        <h1>Hi, I'm Joseph Ressler. I love programming, and I love game programming.</h1>
-        <p>Please enjoy this app, I built it to get more experience with flask, Docker, and deploying apps in AWS.</p>
-        <p>I also learned the basics of building a chatbot using RAG LLM with the OpenAI API, which is trained on the <a href="https://na.wargaming.net/support/en/products/wows/">World of Warships FAQ's</a>.</p>
-        <p>&nbsp;</p>
-        <section id="flaskapp">
-            <h2>Here are some of the skills I’ve worked on to build this app.</h2>
+                    <li>Deploying web applications with Amazon Web Services
+                        <ul>
+                            <li>Creating Docker Images</li>
+                            <li>Buying domains through NameCheap</li>
+                            <li>Configuring the Domain to my app in AWS DNS Zones</li>
+                            <li>Using Lightsail to set up an SSL certificate for the app</li>
+                            <li>Deploying AWS Lightsail applications</li>
+                        </ul>
+                    </li>
+
+                    <li>Building RAG chatbots
+                        <ul>
+                            <li>Building Vector Databases using LLamaIndex</li>
+                            <li>Building augmented chatbots using OpenAI API</li>
+                        </ul>
+                    </li>
+                    <li>Implementing User Authentication
+                        <ul>
+                            <li>Designed User infrastructure and secure data storage</li>
+                            <li>Implemented reCaptcha to ensure site security against bots</li>
+                        </ul>
+                    </li>
+                </ul>
+        </div>
+        <div id="zenatria" class="div-portfolio">
+            <h2>At Clark University's Game Studio, under direction from Kristopher Cronshaw, I worked as a game engineer on the title Zenatria.</h2>
+            <h3>Zenatria is an upcoming fantasy tower defense game (now on Steam!) with inspirations from classic fantasy archetypes and retro tower defense games.</h3>
+            <p>My contributions to the project:</p>
             <ul>
-                <li>Developing Python Flask Apps</li>
-                <li>Creating & integrating SQLite databases</li>
-                <li>Migrating databases to MySQL</li>
-                <li>Writing Ajax calls to enable two-way communication in apps</li>
-                <li>Creating Docker Images</li>
-                <li>Deploying AWS Lightsail applications</li>
-                <li>Setting up MySQL servers using AWS Lightsail</li>
-                <li>Buying domains through NameCheap</li>
-                <li>Configuring the Domain to my app in AWS DNS Zones</li>
-                <li>Using Lightsail to set up an SSL certificate for the app</li>
-                <li>Building Vector Databases using LLamaIndex</li>
-                <li>Building augmented chatbots using OpenAI API and World of Warships FAQ</li>
-                <li>Using GitHub for source control</li>
-                <li>Implementing User Authentication & reCaptcha</li>
-                <li>Debugging live service applications</li>
-            </ul>
-        </section>
-    </div>
-    <div style="clear:both"></div>
-    <div style="clear:both"></div>
-    <section id="projects">
-        <div id="zenatria">
-            <h3>At Clark University's Game Studio, under direction from Kristopher Cronshaw, I worked as a game engineer on the game Zenatria, now on Steam!</h3>
-            <p>Things I did for the project:</p>
-            <ul>
-                <li>Continually reevaluated the project to ensure sound object-oriented code was being written</li>
-                <li>Fully rewrote pathfinding system to be more futureproof and modular</li>
+                <li>Thoroughly debugged and optimized the existing Unity C# codebase</li>
+                <li>Developed pivotal systems and algorithms; Fully rewrote pathfinding system to be more futureproof and modular</li>
+                <li>Enforced object-oriented programming principles</li>
                 <li>Optimized other engineers' workflows through coaching</li>
+                <li>Tracked user feedback during our live demo at PAX East 2024</li>
+                <li>Patched any bugs that were found during the demo</li>
             </ul>
             <iframe src="https://store.steampowered.com/widget/2928010/" frameborder="0" width="646" height="190"></iframe>
         </div>
-    </section>
+    </div>
 
 
 {% endblock %}

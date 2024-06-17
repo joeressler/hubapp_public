@@ -4,37 +4,38 @@
 {% endblock %}
 {% block page_content %}
 {% from "_form_helpers.html" import render_field, render_hidden_field %}
-    <h1>Retrieval Augmented Help Bot</h1>
-    <p>This chatbot is trained on the player support database for <a href="https://na.wargaming.net/support/en/products/wows/">World of Warships</a>, <a href="https://support-leagueoflegends.riotgames.com/hc/en-us/sections/115002165527-League-guides-FAQs">League of Legends</a>, and <a href="https://us.battle.net/support/en/help/games/wow">World of Warcraft</a></p>
-    <p>Ask any question pertaining to the game augmentation selected.</p>
-    <div id="chatbotform" style="height:100vh; display: flex;">
-        <form action="{{ url_for('.chat_submit', _external=True) }}" id="chat_form" method="POST" role="form" name="search_form">
-            {{ render_hidden_field(form.csrf_token) }}
-            <div id="augmentDiv">
-            <table>
-            <caption color: floralwhite;>{{ form.augment.label }}</caption>
-                {% for subfield in form.augment %}
-                 <tr class="augment-boxes">
-                     <td class="augment-cells" style="color: floralwhite;">{{ subfield.label }} {{ subfield }}</td>
-                 </tr>
-                {% endfor %}
-            </table>
-            </div>
-            <hr style="height: 12px; border: 0; box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);"/>
-            <div id="question" style="flex-wrap: wrap;">
-                {{ render_field(form.question) }}
-                <input type="submit" value="Submit question" name="submit" />
-            </div>
-
-            {% if answer %}
-                <div id="answer" style="flex-wrap: wrap;">
-                    {{ answer }}
+    <div id="chatbotForm">
+        <h1>Retrieval Augmented Help Bot</h1>
+        <p>This chatbot is trained on the player support database for <a href="https://na.wargaming.net/support/en/products/wows/">World of Warships</a>, <a href="https://support-leagueoflegends.riotgames.com/hc/en-us/sections/115002165527-League-guides-FAQs">League of Legends</a>, and <a href="https://us.battle.net/support/en/help/games/wow">World of Warcraft</a></p>
+        <p>Ask any question pertaining to the game augmentation selected.</p>
+        <div id="chatbotform" style="height:100vh; display: flex;">
+            <form action="{{ url_for('.chat_submit', _external=True) }}" id="chat_form" method="POST" role="form" name="search_form">
+                {{ render_hidden_field(form.csrf_token) }}
+                <div id="augmentDiv">
+                <table>
+                    <caption style="color: floralwhite;">{{ form.augment.label }}</caption>
+                    {% for subfield in form.augment %}
+                     <tr class="augment-boxes">
+                         <td class="augment-cells" style="color: floralwhite;">{{ subfield.label }} {{ subfield }}</td>
+                     </tr>
+                    {% endfor %}
+                </table>
                 </div>
-                {% else %}
-            {% endif %}
-            <!--<button type="button" id="saveform" name="Foo" value="Bar">I'm done.</button>-->
+                <hr style="width: 100%; height: 12px; border: 0; box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);"/>
+                <div id="question" style="flex-wrap: wrap;">
+                    {{ render_field(form.question) }}
+                    <input type="submit" value="Submit question" name="submit" />
+                </div>
 
-        </form>
+                {% if answer %}
+                    <div id="answer" style="width: 100%; flex-wrap: wrap;">
+                        {{ answer }}
+                    </div>
+                    {% else %}
+                {% endif %}
+                <!--<button type="button" id="saveform" name="Foo" value="Bar">I'm done.</button>-->
+
+            </form>
+        </div>
     </div>
-
 {% endblock %}

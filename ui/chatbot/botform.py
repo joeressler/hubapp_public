@@ -18,4 +18,4 @@ class BotForm(FlaskForm):
                                   ("lol", "League of Legends"),
                                   ("warcraft", "World of Warcraft")])
 
-    question = TextAreaField(name="question", validators=[DataRequired()], render_kw={"rows": 4, "cols": 75})
+    question = TextAreaField(name="question", id="questionField", validators=[DataRequired()])

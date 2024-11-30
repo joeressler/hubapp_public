@@ -37,6 +37,11 @@
     .navbar-nav {
         align-items: center; /* Align navbar items vertically */
     }
+    #steam_widget {
+        width: 647px;
+        height: 191px;
+        frameborder: 0px;
+    }
 }
 
 .navbar .dropdown-menu {
@@ -90,6 +95,9 @@
     width: 100%;
 }
 
+#steam_widget {
+        overflow: auto;
+}
 
 label {
     color: floralwhite;

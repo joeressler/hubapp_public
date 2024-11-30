@@ -1,8 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM python:3.12.3-bullseye
 
-# By default, listen on port 5000
-EXPOSE 5000
+EXPOSE 8080
 
 # Set the working directory in the container
 WORKDIR /app
@@ -33,4 +32,4 @@ COPY . ./
 
 
 # Specify the command to run on container start
-CMD [ "flask", "run", "--host", "0.0.0.0", "--port", "5000" ]
+CMD [ "flask", "run", "--host", "0.0.0.0", "--port", "8080" ]

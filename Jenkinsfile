@@ -11,14 +11,12 @@ pipeline {
         GCR_IMAGE = 'gcr.io/lively-machine-427223-j0/flask-container'
         VERSION = '1.00'
         AWS_LIGHTSAIL_SERVICE = 'flask-service'
-        //DOCKER = credentials('docker-hub-credentials')  // If using private Docker registry
     }
     
     stages {
         stage('Build and Tag') {
             steps {
-                script {  // Added script block
-                    // Using Docker Pipeline plugin syntax
+                script {
                     docker.build("${DOCKER_IMAGE}")
                     bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
                 }
@@ -50,7 +48,6 @@ pipeline {
     
     post {
         always {
-            cleanWs()  // Clean workspace after build
             bat "docker rmi ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION} || true"
         }
     }

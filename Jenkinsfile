@@ -18,8 +18,8 @@ pipeline {
             steps {
                 script {
                     docker.build("${DOCKER_IMAGE}")
-                    bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
                 }
+                bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
             }
         }
         
@@ -58,8 +58,10 @@ pipeline {
     
     post {
         always {
-            script {
-                bat "docker rmi ${env.DOCKER_IMAGE} ${env.GCR_IMAGE}:${env.VERSION} || true"
+            node('built-in') {  // Use built-in node
+                script {
+                    bat "docker rmi ${env.DOCKER_IMAGE} ${env.GCR_IMAGE}:${env.VERSION} || true"
+                }
             }
         }
     }

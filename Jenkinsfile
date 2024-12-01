@@ -17,9 +17,11 @@ pipeline {
     stages {
         stage('Build and Tag') {
             steps {
-                // Using Docker Pipeline plugin syntax
-                docker.build("${DOCKER_IMAGE}")
-                bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
+                script {  // Added script block
+                    // Using Docker Pipeline plugin syntax
+                    docker.build("${DOCKER_IMAGE}")
+                    bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
+                }
             }
         }
         

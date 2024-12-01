@@ -7,8 +7,8 @@ pipeline {
         VERSION = '1.00'
         AWS_LIGHTSAIL_SERVICE = 'flask-service'
         AWS_DEFAULT_REGION = 'us-east-1'
-        AWS_DEPLOY = false
-        GCR_DEPLOY = true
+        AWS_DEPLOY = 'false'
+        GCR_DEPLOY = 'true'
     }
     
     stages {
@@ -25,7 +25,7 @@ pipeline {
         
         stage('Deploy to AWS Lightsail') {
             when {
-                environment name: 'AWS_DEPLOY', value: true
+                environment name: 'AWS_DEPLOY', value: 'true'
             }
             steps {
                 withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
@@ -39,7 +39,7 @@ pipeline {
         
         stage('Deploy to Google Cloud Run') {
             when {
-                environment name: 'GCR_DEPLOY', value: true
+                environment name: 'GCR_DEPLOY', value: 'true'
             }
             steps {
                 withCredentials([file(credentialsId: 'google-cloud-key', variable: 'GC_KEY')]) {

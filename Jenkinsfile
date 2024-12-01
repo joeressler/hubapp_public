@@ -2,9 +2,9 @@ pipeline {
     agent {
         dockerfile {
             filename 'Dockerfile'
-            args '-u root'  // Run as root to avoid permission issues
-            reuseNode true  // Reuse the workspace
-            additionalBuildArgs '--platform=linux/amd64'  // Specify platform explicitly
+            args '-u root -v /c/ProgramData/Jenkins/.jenkins/workspace/flask-deployment:/workspace'  // Unix-style path
+            customWorkspace '/workspace'  // Set custom workspace
+            additionalBuildArgs '--platform=linux/amd64'
         }
     }
     

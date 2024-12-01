@@ -33,20 +33,15 @@ pipeline {
         stage('Deploy to Google Cloud Run') {
             steps {
                 withCredentials([file(credentialsId: 'google-cloud-key', variable: 'GC_KEY')]) {
-                    bat "gcloud auth activate-service-account --key-file=${GC_KEY}"
-                    bat "gcloud auth configure-docker"
+                    // Configure gcloud with service account
+                    bat 'gcloud auth activate-service-account --key-file=%GC_KEY%'
+                    
+                    // Configure Docker with gcloud credentials
+                    bat 'gcloud auth configure-docker gcr.io -q'
+                    
+                    // Push and deploy
                     bat "docker push ${GCR_IMAGE}:${VERSION}"
-                    bat "gcloud run deploy ${DOCKER_IMAGE} --image=${GCR_IMAGE}:${VERSION} --platform managed"
-                }
-            }
-        }
-
-        stage('Initialize Variables for Post-Always Block') { // The post-always block needs the variables to be set or it won't be able to find them
-            steps {
-                script {
-                    env.DOCKER_IMAGE = "${DOCKER_IMAGE}"
-                    env.GCR_IMAGE = "${GCR_IMAGE}"
-                    env.VERSION = "${VERSION}"
+                    bat "gcloud run deploy ${DOCKER_IMAGE} --image=${GCR_IMAGE}:${VERSION} --platform managed --region us-central1"
                 }
             }
         }

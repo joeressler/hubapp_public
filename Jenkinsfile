@@ -1,12 +1,5 @@
 pipeline {
-    agent {
-        dockerfile {
-            filename 'Dockerfile'
-            args '-u root -v /c/ProgramData/Jenkins/.jenkins/workspace/flask-deployment:/workspace'  // Unix-style path
-            customWorkspace '/workspace'  // Set custom workspace
-            additionalBuildArgs '--platform=linux/amd64'
-        }
-    }
+    agent any  // Use Jenkins' default agent
     
     environment {
         DOCKER_IMAGE = 'flask-container'
@@ -19,9 +12,9 @@ pipeline {
         stage('Build and Tag') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE}")
+                    bat "docker build -t ${DOCKER_IMAGE} ."
+                    bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
                 }
-                bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
             }
         }
         
@@ -60,10 +53,8 @@ pipeline {
     
     post {
         always {
-            node('built-in') {  // Use built-in node
-                script {
-                    bat "docker image prune -a -f"  // Added -f to skip confirmation
-                }
+            script {
+                bat "docker image prune -a -f"
             }
         }
     }

@@ -7,6 +7,8 @@ pipeline {
         VERSION = '1.00'
         AWS_LIGHTSAIL_SERVICE = 'flask-service'
         AWS_DEFAULT_REGION = 'us-east-1'
+        AWS_DEPLOY = false
+        GCR_DEPLOY = true
     }
     
     stages {
@@ -14,12 +16,17 @@ pipeline {
             steps {
                 script {
                     bat "docker build -t ${DOCKER_IMAGE} ."
-                    bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
+                    if (GCR_DEPLOY) {
+                        bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
+                    }
                 }
             }
         }
         
         stage('Deploy to AWS Lightsail') {
+            when {
+                environment name: 'AWS_DEPLOY', value: true
+            }
             steps {
                 withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
                                    credentialsId: 'd03bf61e-64e0-4efb-b6cc-9907081a93dd', 
@@ -31,6 +38,9 @@ pipeline {
         }
         
         stage('Deploy to Google Cloud Run') {
+            when {
+                environment name: 'GCR_DEPLOY', value: true
+            }
             steps {
                 withCredentials([file(credentialsId: 'google-cloud-key', variable: 'GC_KEY')]) {
                     // Configure gcloud with service account

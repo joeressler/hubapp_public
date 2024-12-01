@@ -65,10 +65,7 @@ pipeline {
     
     post {
         always {
-            script {
-                docker.image(DOCKER_IMAGE).remove(force: true)
-                docker.image("${GCR_IMAGE}:${VERSION}").remove(force: true)
-            }
+            bat "docker image prune -a -f"
         }
     }
 }

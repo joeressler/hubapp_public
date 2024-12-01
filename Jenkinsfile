@@ -12,19 +12,28 @@ pipeline {
         stage('Build and Tag') {
             steps {
                 script {
-                    bat "docker build -t ${DOCKER_IMAGE} ."
-                    bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
+                    docker.build(DOCKER_IMAGE)
+                    docker.image(DOCKER_IMAGE).tag("${GCR_IMAGE}:${VERSION}")
                 }
             }
         }
         
         stage('Deploy to AWS Lightsail') {
             steps {
-                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                                   credentialsId: 'd03bf61e-64e0-4efb-b6cc-9907081a93dd', 
-                                   secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    bat "aws lightsail push-container-image --service-name ${AWS_LIGHTSAIL_SERVICE} --label ${DOCKER_IMAGE} --image ${DOCKER_IMAGE}"
-                    bat "aws lightsail create-container-service-deployment --service-name ${AWS_LIGHTSAIL_SERVICE} --containers file://containers.json --public-endpoint file://public-endpoint.json"
+                withAWS(credentials: 'd03bf61e-64e0-4efb-b6cc-9907081a93dd', region: 'us-east-1') {
+                    awsLightsail(
+                        serviceAction: 'pushContainerImage',
+                        serviceName: AWS_LIGHTSAIL_SERVICE,
+                        label: DOCKER_IMAGE,
+                        image: DOCKER_IMAGE
+                    )
+                    
+                    awsLightsail(
+                        serviceAction: 'createContainerServiceDeployment',
+                        serviceName: AWS_LIGHTSAIL_SERVICE,
+                        containersJson: readFile('containers.json'),
+                        publicEndpointJson: readFile('public-endpoint.json')
+                    )
                 }
             }
         }
@@ -32,20 +41,23 @@ pipeline {
         stage('Deploy to Google Cloud Run') {
             steps {
                 withCredentials([file(credentialsId: 'google-cloud-key', variable: 'GC_KEY')]) {
-                    bat "gcloud auth activate-service-account --key-file=${GC_KEY}"
-                    bat "gcloud auth configure-docker"
-                    bat "docker push ${GCR_IMAGE}:${VERSION}"
-                    bat "gcloud run deploy ${DOCKER_IMAGE} --image=${GCR_IMAGE}:${VERSION} --platform managed"
-                }
-            }
-        }
-
-        stage('Initialize Variables for Post-Always Block') { // The post-always block needs the variables to be set or it won't be able to find them
-            steps {
-                script {
-                    env.DOCKER_IMAGE = "${DOCKER_IMAGE}"
-                    env.GCR_IMAGE = "${GCR_IMAGE}"
-                    env.VERSION = "${VERSION}"
+                    step([$class: 'GoogleCloudBuildStep',
+                        credentialsId: 'google-cloud-key',
+                        serviceAccountKeyFile: env.GC_KEY,
+                        cloudSdkVersion: 'latest',
+                        steps: [
+                            // Authenticate with GCR
+                            [$class: 'DockerAuthStep'],
+                            // Push the image
+                            [$class: 'DockerPushStep',
+                             image: "${GCR_IMAGE}:${VERSION}"],
+                            // Deploy to Cloud Run
+                            [$class: 'CloudRunDeployStep',
+                             image: "${GCR_IMAGE}:${VERSION}",
+                             serviceName: DOCKER_IMAGE,
+                             platform: 'managed']
+                        ]
+                    ])
                 }
             }
         }
@@ -54,7 +66,8 @@ pipeline {
     post {
         always {
             script {
-                bat "docker image prune -a -f"
+                docker.image(DOCKER_IMAGE).remove(force: true)
+                docker.image("${GCR_IMAGE}:${VERSION}").remove(force: true)
             }
         }
     }

@@ -13,8 +13,8 @@ pipeline {
             steps {
                 script {
                     docker.build(DOCKER_IMAGE)
-                    docker.image(DOCKER_IMAGE).tag("${GCR_IMAGE}:${VERSION}")
                 }
+                bat "docker tag ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION}"
             }
         }
         

@@ -60,7 +60,7 @@ pipeline {
         always {
             node('built-in') {  // Use built-in node
                 script {
-                    bat "docker rmi ${env.DOCKER_IMAGE} ${env.GCR_IMAGE}:${env.VERSION} || true"
+                    bat "docker image prune -a || true"
                 }
             }
         }

@@ -44,11 +44,23 @@ pipeline {
                 }
             }
         }
+
+        stage('Initialize Variables for Post-Always Block') { // The post-always block needs the variables to be set or it won't be able to find them
+            steps {
+                script {
+                    env.DOCKER_IMAGE = "${DOCKER_IMAGE}"
+                    env.GCR_IMAGE = "${GCR_IMAGE}"
+                    env.VERSION = "${VERSION}"
+                }
+            }
+        }
     }
     
     post {
         always {
-            bat "docker rmi ${DOCKER_IMAGE} ${GCR_IMAGE}:${VERSION} || true"
+            script {
+                bat "docker rmi ${env.DOCKER_IMAGE} ${env.GCR_IMAGE}:${env.VERSION} || true"
+            }
         }
     }
 }

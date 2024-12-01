@@ -3,6 +3,8 @@ pipeline {
         dockerfile {
             filename 'Dockerfile'
             args '-u root'  // Run as root to avoid permission issues
+            reuseNode true  // Reuse the workspace
+            additionalBuildArgs '--platform=linux/amd64'  // Specify platform explicitly
         }
     }
     
@@ -60,7 +62,7 @@ pipeline {
         always {
             node('built-in') {  // Use built-in node
                 script {
-                    bat "docker image prune -a || true"
+                    bat "docker image prune -a -f"  // Added -f to skip confirmation
                 }
             }
         }

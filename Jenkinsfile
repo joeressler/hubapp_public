@@ -6,6 +6,7 @@ pipeline {
         GCR_IMAGE = 'gcr.io/lively-machine-427223-j0/flask-container'
         VERSION = '1.00'
         AWS_LIGHTSAIL_SERVICE = 'flask-service'
+        AWS_DEFAULT_REGION = 'us-east-1'
     }
     
     stages {
@@ -59,4 +60,5 @@ pipeline {
         }
     }
 }
+
 

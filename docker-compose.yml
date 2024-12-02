@@ -1,0 +1,33 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    ports:
+      - "8080:8080"
+    environment:
+      - FLASK_APP=backend/app.py
+      - FLASK_ENV=development
+      - PYTHONPATH=/app
+      - NODE_ENV=production
+      - CI=false
+      - GENERATE_SOURCEMAP=false
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./.env:/app/config/.env:ro
+      - ./storage:/app/storage:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 

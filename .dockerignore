@@ -1,0 +1,30 @@
+# Node
+frontend/node_modules
+frontend/npm-debug.log
+frontend/build
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.cursorignore
+.cursorrules
+
+# OS
+.DS_Store
+Thumbs.db

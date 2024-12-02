@@ -8,7 +8,7 @@ pipeline {
         AWS_LIGHTSAIL_SERVICE = 'flask-service'
         GCR_PROJECT = 'lively-machine-427223-j0'
         AWS_DEFAULT_REGION = 'us-east-1'
-        AWS_DEPLOY = 'false'
+        AWS_DEPLOY = 'true'
         GCR_DEPLOY = 'true'
     }
     

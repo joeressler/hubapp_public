@@ -2,10 +2,11 @@ pipeline {
     agent any  // Use Jenkins' default agent
     
     environment {
+        VERSION = '1.00'
         DOCKER_IMAGE = 'flask-container'
         GCR_IMAGE = 'gcr.io/lively-machine-427223-j0/flask-container'
-        VERSION = '1.00'
         AWS_LIGHTSAIL_SERVICE = 'flask-service'
+        GCR_PROJECT = 'lively-machine-427223-j0'
         AWS_DEFAULT_REGION = 'us-east-1'
         AWS_DEPLOY = 'false'
         GCR_DEPLOY = 'true'
@@ -51,7 +52,7 @@ pipeline {
                     
                     // Push and deploy
                     bat "docker push ${GCR_IMAGE}:${VERSION}"
-                    bat "gcloud run deploy ${DOCKER_IMAGE} --image=${GCR_IMAGE}:${VERSION} --platform managed --region us-central1"
+                    bat "gcloud run deploy ${DOCKER_IMAGE} --project=${GCR_PROJECT} --image=${GCR_IMAGE}:${VERSION} --platform managed --region us-central1"
                 }
             }
         }

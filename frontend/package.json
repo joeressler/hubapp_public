@@ -1,57 +1,67 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@types/node": "^16.18.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@types/react-router-dom": "^5.3.3",
-    "axios": "^1.6.2",
-    "bootstrap": "^5.3.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "eslint": "^8.0.0",
-    "eslint-plugin-react": "^7.0.0",
-    "eslint-plugin-react-hooks": "^4.0.0"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      "react-hooks/exhaustive-deps": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
-      "jsx-a11y/img-redundant-alt": "off"
-    }
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "proxy": "http://localhost:8080"
-}
+    "name": "frontend",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+      "@emotion/react": "^11.11.4",
+      "@emotion/styled": "^11.11.0",
+      "@mui/icons-material": "^5.15.13",
+      "@mui/material": "^5.15.13",
+      "@types/node": "^16.18.0",
+      "@types/react": "^18.2.0",
+      "@types/react-dom": "^18.2.0",
+      "@types/react-router-dom": "^5.3.3",
+      "axios": "^1.6.2",
+      "bootstrap": "^5.3.3",
+      "framer-motion": "^11.0.8",
+      "gsap": "^3.12.5",
+      "react": "^18.2.0",
+      "react-dom": "^18.2.0",
+      "react-intersection-observer": "^9.8.1",
+      "react-parallax-tilt": "^1.7.209",
+      "react-router-dom": "^6.20.0",
+      "react-scripts": "5.0.1",
+      "react-scroll-parallax": "^3.4.5",
+      "typescript": "^4.9.5",
+      "web-vitals": "^2.1.4"
+    },
+    "devDependencies": {
+      "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+      "@typescript-eslint/eslint-plugin": "^5.0.0",
+      "@typescript-eslint/parser": "^5.0.0",
+      "eslint": "^8.0.0",
+      "eslint-plugin-react": "^7.0.0",
+      "eslint-plugin-react-hooks": "^4.0.0"
+    },
+    "scripts": {
+      "start": "react-scripts start",
+      "build": "react-scripts build",
+      "test": "react-scripts test",
+      "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+      "extends": [
+        "react-app",
+        "react-app/jest"
+      ],
+      "rules": {
+        "react-hooks/exhaustive-deps": "warn",
+        "@typescript-eslint/no-unused-vars": "warn",
+        "jsx-a11y/img-redundant-alt": "off"
+      }
+    },
+    "browserslist": {
+      "production": [
+        ">0.2%",
+        "not dead",
+        "not op_mini all"
+      ],
+      "development": [
+        "last 1 chrome version",
+        "last 1 firefox version",
+        "last 1 safari version"
+      ]
+    },
+    "proxy": "http://localhost:8080"
+  }
+  

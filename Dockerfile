@@ -1,57 +1,63 @@
 # Stage 1: Build React frontend
-FROM node:18 AS frontend-build
+FROM node:18-alpine AS frontend-build
 WORKDIR /app/frontend
 
-# Copy package files for caching
-COPY frontend/package.json frontend/package-lock.json ./
+# Copy only package files first for better layer caching
+COPY frontend/package*.json ./
 
-# Clean install dependencies and clear npm cache
-RUN npm cache clean --force && \
-    rm -rf node_modules && \
-    npm install
+# Install ALL dependencies (including dev dependencies) for build
+RUN npm ci && \
+    npm install @babel/plugin-proposal-private-property-in-object --save-dev && \
+    npm cache clean --force
 
-# Copy all frontend files
+# Copy only necessary frontend files
 COPY frontend/src ./src
 COPY frontend/public ./public
 COPY frontend/tsconfig.json ./
 COPY frontend/*.d.ts ./
 
-# Set NODE_ENV to production for optimal build
-ENV NODE_ENV=production
-ENV CI=false
-ENV GENERATE_SOURCEMAP=false
+# Build frontend with optimizations
+ENV NODE_ENV=production \
+    CI=false \
+    GENERATE_SOURCEMAP=false
 
-# Build frontend with reduced output
 RUN npm run build
 
 # Stage 2: Python backend with frontend build
-FROM python:3.12.3-bullseye
+FROM python:3.11-slim-bullseye
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install only necessary system dependencies including MySQL dev packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     netcat-openbsd \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    pkg-config \
+    default-libmysqlclient-dev \
+    build-essential \
+    gcc \
+    python3-dev \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Copy Python dependencies and install them
+# Copy and install Python requirements
 COPY requirements.txt .
-RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Create config directory and ensure it exists
-RUN mkdir -p /app/config
+# Create necessary directories and set permissions
+RUN mkdir -p /app/config /app/storage && \
+    chmod 755 /app/storage
 
-# Copy the rest of the backend code
+# Copy backend files with new structure
 COPY backend ./backend
-COPY modules ./modules
-COPY utils ./utils
-COPY storage ./storage
 
 # Set environment variables
-ENV FLASK_APP=backend/app.py
-ENV PYTHONPATH=/app
-ENV FLASK_ENV=development
+ENV FLASK_APP=backend/app.py \
+    PYTHONPATH=/app \
+    FLASK_ENV=production \
+    PYTHONUNBUFFERED=1
 
 # Copy the built frontend from stage 1
 COPY --from=frontend-build /app/frontend/build ./frontend/build

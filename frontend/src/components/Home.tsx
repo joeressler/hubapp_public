@@ -2,23 +2,79 @@ import React from 'react';
 
 const Home: React.FC = () => {
   return (
-    <div id="portFlexBox">
-      <div id="pic" className="div-portfolio">
-        <h1>Hi, I'm Joseph Ressler. I love programming, and I love game programming.</h1>
-        <p>Please enjoy this app, I built it to get more experience with Full Stack development.</p>
-        <img 
-          src="/static/joseph.jpg"
-          alt="A picture of Joseph A. Ressler"
-        />
-      </div>
-      <div id="intro" className="div-portfolio">
-        <h2>Here are some of the skills I've worked on to build this app.</h2>
-        <h3>
-          Try the <a href="https://aws.josepharessler.com">AWS (aws. and www. subdomains)</a> and{' '}
-          <a href="https://gcr.josepharessler.com">Google Cloud Run (gcr. subdomain)</a> hosted versions of the site!
-        </h3>
-        {/* Add your skills list here - similar to your current portfolio.html */}
-      </div>
+    <div className="home-container">
+      <section className="hero-section">
+        <div className="profile-container fade-in">
+          <img 
+            src="/static/joseph.jpg"
+            alt="Joseph A. Ressler"
+            className="profile-image"
+          />
+          <h1 className="slide-up">Hi, I'm Joseph Ressler</h1>
+          <h2 className="slide-up-delay">Full Stack Developer & Game Programming Enthusiast</h2>
+          
+          <div className="social-links slide-up-delay-2">
+            <a href="https://github.com/joeressler?tab=repositories" target="_blank" rel="noopener noreferrer" className="social-link">
+              GitHub
+            </a>
+            <a href="https://www.linkedin.com/in/joseph-ressler/" target="_blank" rel="noopener noreferrer" className="social-link">
+              LinkedIn
+            </a>
+            <a href="/static/Ressler_Joseph_Resume.pdf" className="social-link">
+              Resume
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="skills-section">
+        <h2 className="section-title">Technical Skills</h2>
+        <div className="skills-grid">
+          {[
+            "Full Stack Development",
+            "Python Flask Apps",
+            "React & TypeScript",
+            "Docker & Containerization",
+            "AWS Lightsail Deployment",
+            "MySQL Database Design",
+            "RESTful API Development",
+            "User Authentication",
+            "Vector Databases",
+            "OpenAI Integration",
+            "CI/CD Pipelines",
+            "Cloud Infrastructure"
+          ].map((skill, index) => (
+            <div 
+              key={skill} 
+              className="skill-card"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {skill}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="projects-section">
+        <h2 className="section-title">Try My Deployments</h2>
+        <div className="projects-grid">
+          <a 
+            href="https://aws.josepharessler.com" 
+            className="project-card"
+          >
+            <h3>AWS Deployment</h3>
+            <p>aws. and www. subdomains</p>
+          </a>
+          
+          <a 
+            href="https://gcr.josepharessler.com" 
+            className="project-card"
+          >
+            <h3>Google Cloud Run</h3>
+            <p>gcr. subdomain</p>
+          </a>
+        </div>
+      </section>
     </div>
   );
 };

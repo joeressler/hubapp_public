@@ -1,4 +1,10 @@
-CMD /C docker build -t flask-container .
+CMD /C docker-compose down
+
+CMD /C docker-compose up --build
+
+CMD /C docker system prune -f
+
+CMD /C docker-compose logs web
 
 CMD /C aws lightsail push-container-image --service-name flask-service --label flask-container --image flask-container
 

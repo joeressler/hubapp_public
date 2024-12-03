@@ -1,7 +1,8 @@
+import os
 import string
 from typing import Optional
 import mysql
-from utils.vconnection import *
+from backend.utils.vconnection import VConnection, VCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import flash, abort, g
 
@@ -69,14 +70,9 @@ class User:
             sql = "SELECT * FROM user WHERE username = %s LIMIT 2"
             cursor.execute(sql, (user,))
             row = VCursor.get_row_as_json(cursor)
-            check = check_password_hash(row['password_hash'], password)
             if row:
-                if check:
-                    return True
-                else:
-                    return True
-            else:
-                return False
+                return check_password_hash(row['password_hash'], password)
+            return False
 
     @staticmethod
     def lookup(user):

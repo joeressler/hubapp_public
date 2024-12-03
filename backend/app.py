@@ -45,21 +45,25 @@ def load_logged_in_user():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
 
-    if not username or not password:
-        return jsonify({'error': 'Missing username or password'}), 400
+        if not username or not password:
+            return jsonify({'error': 'Missing username or password'}), 400
 
-    if User.authenticate(username, password):
-        user_id = User.id(username)
-        session['user_id'] = user_id
-        return jsonify({
-            'message': 'Login successful',
-            'user': {'id': user_id, 'username': username}
-        }), 200
-    return jsonify({'error': 'Invalid username or password'}), 401
+        if User.authenticate(username, password):
+            user_id = User.id(username)
+            session['user_id'] = user_id
+            return jsonify({
+                'message': 'Login successful',
+                'user': {'id': user_id, 'username': username}
+            }), 200
+        return jsonify({'error': 'Invalid username or password'}), 401
+    except Exception as e:
+        print("Login error:", str(e))  # Add logging
+        return jsonify({'error': 'Internal server error: ' + str(e)}), 500
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
@@ -98,11 +102,17 @@ def check_auth():
         })
     return jsonify(None), 401
 
-@app.route('/api/games', methods=['GET'])
+@app.route('/api/games')
 def get_games():
-    user_id = session.get('user_id')
-    games = GameDB.listgames(user_id=user_id)
-    return jsonify(games)
+    try:
+        games = GameDB.listgames()
+        print("Games retrieved:", games)  # Debug print
+        if games is None:
+            return jsonify({'error': 'No games found'}), 404
+        return jsonify(games)
+    except Exception as e:
+        print("Error fetching games:", str(e))  # Debug print
+        return jsonify({'error': 'Internal server error: ' + str(e)}), 500
 
 @app.route('/api/chat', methods=['POST'])
 @login_required

@@ -46,8 +46,8 @@ const GameList: React.FC = () => {
             <tr>
               <th></th>
               <th>Game Name</th>
-              <th>Joseph's Score</th>
-              <th>Has Joseph fullcleared?</th>
+              <th>Your Score</th>
+              <th>Have you fullcleared?</th>
               <th>Average User Score</th>
               <th>Number of user Fullclears</th>
               <th>User Ratings</th>
@@ -66,7 +66,7 @@ const GameList: React.FC = () => {
                   </button>
                 </td>
                 <td>{game.name}</td>
-                <td>{game.score}</td>
+                <td>{game.score || 'Not rated'}</td>
                 <td>{game.fullclear ? "Yes" : "No"}</td>
                 <td>{game.avgScore?.toFixed(1) || "No ratings"}</td>
                 <td>{game.fullclearCount}</td>
@@ -81,4 +81,4 @@ const GameList: React.FC = () => {
   );
 };
 
-export default GameList; 
+export default GameList;

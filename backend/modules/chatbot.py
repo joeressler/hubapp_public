@@ -10,7 +10,7 @@ from llama_index.core import (
 import csv
 import os
 from dotenv import load_dotenv, find_dotenv
-from utils.vconnection import VConnection, VCursor
+from backend.utils.vconnection import VConnection, VCursor
 
 class ChatBot:
     def __init__(self):

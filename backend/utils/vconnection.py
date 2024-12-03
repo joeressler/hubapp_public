@@ -1,24 +1,32 @@
-import mysql
 from mysql.connector import MySQLConnection
-
 import os
 from dotenv import load_dotenv, find_dotenv
+import mysql.connector
+
 load_dotenv(find_dotenv('.env'))
-DATABASE_KEY = os.getenv('DATABASE_KEY')
 
 
-class VConnection (object):
+class VConnection(object):
     def __init__(self, connection_params=None):
         self.connection_params = connection_params
         self.connection = None
 
     def __enter__(self):
-        hostname = 'ls-84718166a323cdf809c46464e4fb7d925cfc5758.c3082ayykn8d.us-east-1.rds.amazonaws.com'
-        self.connection = MySQLConnection(user='admin', password=DATABASE_KEY, host=hostname, database='gamedb')
-        return self.connection
+        try:
+            self.connection = MySQLConnection(
+                user=os.getenv('MYSQL_USER'), 
+                password=os.getenv('MYSQL_PWD'),
+                host=os.getenv('MYSQL_HOST'),
+                database=os.getenv('MYSQL_DATABASE')
+            )
+            return self.connection
+        except mysql.connector.Error as err:
+            print(f"Connection error: {err}")
+            raise
 
     def __exit__(self, type, value, tb):
-        self.connection.close()
+        if self.connection:
+            self.connection.close()
 
 
 class VCursor(object):

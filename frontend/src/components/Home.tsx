@@ -24,18 +24,23 @@ const SkillCard: React.FC<{ skill: string; index: number }> = ({ skill, index })
       transition={{ duration: 0.6, delay: index * 0.1 }}
     >
       <Tilt
-        tiltMaxAngleX={10}
-        tiltMaxAngleY={10}
+        tiltMaxAngleX={15}
+        tiltMaxAngleY={15}
         perspective={1000}
         glareEnable={true}
-        glareMaxOpacity={0.1}
+        glareMaxOpacity={0.15}
         scale={1.02}
+        gyroscope={true}
       >
         <div className="crystal-card">
           <Typography 
             variant="h6" 
             className="gradient-text"
-            sx={{ fontWeight: 500 }}
+            sx={{ 
+              fontWeight: 500,
+              letterSpacing: '0.05em',
+              textAlign: 'center'
+            }}
           >
             {skill}
           </Typography>
@@ -59,12 +64,13 @@ const ProjectCard: React.FC<{ title: string; subtitle: string; href: string }> =
       transition={{ duration: 0.6 }}
     >
       <Tilt
-        tiltMaxAngleX={10}
-        tiltMaxAngleY={10}
+        tiltMaxAngleX={15}
+        tiltMaxAngleY={15}
         perspective={1000}
         glareEnable={true}
-        glareMaxOpacity={0.1}
+        glareMaxOpacity={0.15}
         scale={1.02}
+        gyroscope={true}
       >
         <Box
           component="a"
@@ -80,11 +86,23 @@ const ProjectCard: React.FC<{ title: string; subtitle: string; href: string }> =
           <Typography 
             variant="h5" 
             className="gradient-text"
-            sx={{ fontWeight: 600, mb: 2 }}
+            sx={{ 
+              fontWeight: 600,
+              mb: 2,
+              textAlign: 'center',
+              letterSpacing: '0.05em'
+            }}
           >
             {title}
           </Typography>
-          <Typography variant="subtitle1" sx={{ color: 'rgba(226, 232, 240, 0.8)' }}>
+          <Typography 
+            variant="subtitle1" 
+            sx={{ 
+              color: 'rgba(226, 232, 240, 0.9)',
+              textAlign: 'center',
+              textShadow: '0 0 10px rgba(56, 189, 248, 0.3)'
+            }}
+          >
             {subtitle}
           </Typography>
         </Box>
@@ -101,18 +119,15 @@ const Home: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Parallax effect for background elements
-    const parallaxElements = document.querySelectorAll('.parallax');
-    parallaxElements.forEach((elem, index) => {
+    // Neon grid animation
+    const gridElements = document.querySelectorAll('.neon-grid');
+    gridElements.forEach((elem, index) => {
       gsap.to(elem, {
-        y: (index + 1) * 100,
-        ease: "none",
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true
-        }
+        opacity: 0.5 + Math.random() * 0.5,
+        duration: 1 + Math.random(),
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut"
       });
     });
 
@@ -123,6 +138,18 @@ const Home: React.FC = () => {
       repeat: -1,
       yoyo: true,
       ease: "power1.inOut"
+    });
+
+    // Neon flicker effect
+    const neonElements = document.querySelectorAll('.neon-text');
+    neonElements.forEach((elem) => {
+      gsap.to(elem, {
+        opacity: 0.8 + Math.random() * 0.2,
+        duration: 0.1 + Math.random() * 0.2,
+        repeat: -1,
+        yoyo: true,
+        ease: "none"
+      });
     });
   }, []);
 
@@ -144,7 +171,7 @@ const Home: React.FC = () => {
   return (
     <ParallaxProvider>
       <Box sx={{ overflow: 'hidden' }}>
-        {/* Background Elements */}
+        {/* Neon Grid Background */}
         <Box
           sx={{
             position: 'fixed',
@@ -153,21 +180,26 @@ const Home: React.FC = () => {
             right: 0,
             bottom: 0,
             zIndex: 0,
-            overflow: 'hidden',
+            opacity: 0.1,
             pointerEvents: 'none'
           }}
         >
-          {[...Array(5)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <Box
               key={i}
-              className="parallax"
+              className="neon-grid"
               sx={{
                 position: 'absolute',
                 width: '100%',
-                height: '100%',
-                background: `radial-gradient(circle at ${50 + (i * 10)}% ${30 + (i * 15)}%, 
-                  rgba(56, 189, 248, 0.${1 + i}) 0%, 
-                  transparent ${40 + (i * 10)}%)`
+                height: '1px',
+                background: `linear-gradient(90deg, 
+                  transparent 0%, 
+                  rgba(56, 189, 248, ${0.3 + Math.random() * 0.7}) 50%,
+                  transparent 100%
+                )`,
+                top: `${i * 5}%`,
+                transform: `rotate(${Math.random() * 360}deg)`,
+                opacity: 0.3
               }}
             />
           ))}
@@ -178,7 +210,7 @@ const Home: React.FC = () => {
           maxWidth="lg" 
           sx={{ 
             position: 'relative',
-            zIndex: 1,
+            zIndex: 2,
             pt: { xs: 8, md: 12 }
           }}
         >
@@ -224,11 +256,12 @@ const Home: React.FC = () => {
               <Typography 
                 variant={isMobile ? "h3" : "h2"} 
                 component="h1" 
-                className="gradient-text"
+                className="gradient-text neon-text"
                 sx={{ 
                   fontWeight: 700,
                   mb: 2,
-                  letterSpacing: '-0.02em'
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase'
                 }}
               >
                 Hi, I'm Joseph Ressler
@@ -243,10 +276,12 @@ const Home: React.FC = () => {
             >
               <Typography 
                 variant="h4" 
+                className="neon-text"
                 sx={{ 
                   color: 'rgba(226, 232, 240, 0.9)',
                   mb: 4,
-                  fontWeight: 500
+                  fontWeight: 500,
+                  textShadow: '0 0 10px rgba(56, 189, 248, 0.3)'
                 }}
               >
                 Full Stack Developer & Game Programming Enthusiast
@@ -270,17 +305,13 @@ const Home: React.FC = () => {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="neon-button"
                     sx={{
-                      color: '#38bdf8',
                       mx: 1.5,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-3px)',
-                        color: '#0ea5e9',
-                      },
+                      fontSize: '2rem'
                     }}
                   >
-                    <Icon fontSize="large" />
+                    <Icon fontSize="inherit" />
                   </IconButton>
                 ))}
               </Box>
@@ -296,7 +327,13 @@ const Home: React.FC = () => {
                 animation: 'float 2s ease-in-out infinite'
               }}
             >
-              <KeyboardArrowDown sx={{ color: '#38bdf8', fontSize: 40 }} />
+              <KeyboardArrowDown 
+                sx={{ 
+                  color: '#38bdf8',
+                  fontSize: 40,
+                  filter: 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.5))'
+                }} 
+              />
             </motion.div>
           </Box>
 
@@ -311,11 +348,12 @@ const Home: React.FC = () => {
               <Typography
                 variant="h3"
                 align="center"
-                className="gradient-text"
+                className="gradient-text neon-text"
                 sx={{
                   mb: { xs: 6, md: 8 },
                   fontWeight: 700,
-                  letterSpacing: '-0.02em'
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase'
                 }}
               >
                 Technical Skills
@@ -342,11 +380,12 @@ const Home: React.FC = () => {
               <Typography
                 variant="h3"
                 align="center"
-                className="gradient-text"
+                className="gradient-text neon-text"
                 sx={{
                   mb: { xs: 6, md: 8 },
                   fontWeight: 700,
-                  letterSpacing: '-0.02em'
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase'
                 }}
               >
                 Try My Deployments

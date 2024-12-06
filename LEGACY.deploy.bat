@@ -1,3 +1,4 @@
+REM THE OLD FASHIONED WAY
 CMD /C docker-compose down
 
 CMD /C docker-compose up --build

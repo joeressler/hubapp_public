@@ -7,7 +7,7 @@ interface User {
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user] = useState<User | null>(null);
 
   return (
     <nav className="navbar navbar-expand-lg" role="navigation" data-bs-theme="dark">

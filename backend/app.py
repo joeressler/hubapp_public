@@ -12,7 +12,11 @@ from datetime import datetime
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
+# Initialize Flask app with correct static folder path
+app = Flask(__name__, 
+            static_folder='../frontend/build/static',
+            static_url_path='/static')
+
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY')
 app.config['RECAPTCHA_PUBLIC_KEY'] = os.environ.get('RECAPTCHA_PUBLIC_KEY')
 app.config['RECAPTCHA_PRIVATE_KEY'] = os.environ.get('RECAPTCHA_PRIVATE_KEY')
@@ -153,13 +157,45 @@ def get_game_info(game_id):
 def health():
     return jsonify({'status': 'healthy'})
 
-# Serve React app
+# Serve React App - all non-API routes will serve index.html
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+    print(f"DEBUG: Serving path: {path}")  # Added debug logging
+    
+    if path.startswith('api/'):
+        print(f"DEBUG: API request for {path}")  # Added debug logging
+        return send_from_directory('../frontend/build', 'index.html')
+    
+    # First try to serve from the build root directory
+    try:
+        print(f"DEBUG: Attempting to serve file: {path}")  # Added debug logging
+        return send_from_directory('../frontend/build', path)
+    except:
+        # If not found, serve index.html for client-side routing
+        print(f"DEBUG: File not found, serving index.html")  # Added debug logging
+        return send_from_directory('../frontend/build', 'index.html')
+
+# Add a debug route to check static files
+@app.route('/debug/static')
+def debug_static():
+    try:
+        static_files = []
+        for root, dirs, files in os.walk(app.static_folder):
+            for file in files:
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, app.static_folder)
+                static_files.append({
+                    'path': rel_path,
+                    'exists': os.path.exists(full_path),
+                    'size': os.path.getsize(full_path) if os.path.exists(full_path) else 0
+                })
+        return jsonify({
+            'static_folder': app.static_folder,
+            'static_folder_exists': os.path.exists(app.static_folder),
+            'files': static_files
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Your API routes here...

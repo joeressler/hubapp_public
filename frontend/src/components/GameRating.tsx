@@ -13,19 +13,19 @@ const GameRating: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchGameInfo();
-  }, [gameId]);
+    const getGameInfo = async () => {
+      if (!gameId) return;
+      try {
+        const response = await apiService.getGame(parseInt(gameId));
+        setGameInfo(response);
+      } catch (error) {
+        console.error('Failed to fetch game info:', error);
+        setError('Failed to fetch game information');
+      }
+    };
 
-  const fetchGameInfo = async () => {
-    if (!gameId) return;
-    try {
-      const response = await apiService.getGame(parseInt(gameId));
-      setGameInfo(response);
-    } catch (error) {
-      console.error('Failed to fetch game info:', error);
-      setError('Failed to fetch game information');
-    }
-  };
+    getGameInfo();
+  }, [gameId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

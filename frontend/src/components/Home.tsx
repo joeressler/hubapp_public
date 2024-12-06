@@ -3,10 +3,11 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Box, Container, Typography, Grid, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import { GitHub, LinkedIn, Description, KeyboardArrowDown } from '@mui/icons-material';
 import { useInView } from 'react-intersection-observer';
-import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
+import { ParallaxProvider } from 'react-scroll-parallax';
 import Tilt from 'react-parallax-tilt';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import josephImage from '../assets/joseph.jpg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -130,25 +131,26 @@ const Home: React.FC = () => {
         ease: "power1.inOut"
       });
     });
-
+    /* archived
     // Floating animation for hero content
     gsap.to('.hero-content', {
-      y: 20,
-      duration: 2,
+      y: -20,
+      duration: 1,
       repeat: -1,
       yoyo: true,
       ease: "power1.inOut"
     });
+    */
 
     // Neon flicker effect
     const neonElements = document.querySelectorAll('.neon-text');
     neonElements.forEach((elem) => {
       gsap.to(elem, {
-        opacity: 0.8 + Math.random() * 0.2,
-        duration: 0.1 + Math.random() * 0.2,
+        opacity: 0.8 + (Math.random() * 0.2),
+        duration: 0.05 + (Math.random() * 0.5),
         repeat: -1,
         yoyo: true,
-        ease: "none"
+        ease: "power1.InOut"
       });
     });
   }, []);
@@ -207,11 +209,11 @@ const Home: React.FC = () => {
 
         {/* Main Content */}
         <Container 
-          maxWidth="lg" 
+          maxWidth="lg"
           sx={{ 
             position: 'relative',
             zIndex: 2,
-            pt: { xs: 8, md: 12 }
+            pt: { xs: 1, md: 2 }
           }}
         >
           {/* Hero Section */}
@@ -219,7 +221,7 @@ const Home: React.FC = () => {
             ref={heroRef}
             className="hero-section"
             sx={{
-              minHeight: '90vh',
+              maxHeight: 'auto',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
@@ -229,20 +231,26 @@ const Home: React.FC = () => {
             }}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
+              initial={{ opacity: 0.1, scale: 1 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, type: "spring" }}
+              transition={{ duration: 0.3, type: "spring" }}
               className="hero-content"
             >
               <Box
                 component="img"
-                src="/static/joseph.jpg"
+                src={josephImage}
                 alt="Joseph A. Ressler"
                 className="profile-image"
                 sx={{
-                  width: { xs: 200, md: 250 },
-                  height: { xs: 200, md: 250 },
-                  mb: 4,
+                  width: 'auto',
+                  height: '30vh',
+                  mb: 1,
+                  objectFit: 'contain',
+                  objectPosition: 'center',
+                  display: 'block',
+                  
+                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                  borderRadius: '4px'
                 }}
               />
             </motion.div>
@@ -297,7 +305,7 @@ const Home: React.FC = () => {
                 {[
                   { icon: GitHub, href: "https://github.com/joeressler?tab=repositories" },
                   { icon: LinkedIn, href: "https://www.linkedin.com/in/joseph-ressler/" },
-                  { icon: Description, href: "/static/Ressler_Joseph_Resume.pdf" }
+                  { icon: Description, href: "/Ressler_Joseph_Resume.pdf" }
                 ].map(({ icon: Icon, href }, index) => (
                   <IconButton
                     key={href}

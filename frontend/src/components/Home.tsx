@@ -166,7 +166,7 @@ const Home: React.FC = () => {
     "User Authentication",
     "Vector Databases",
     "OpenAI Integration",
-    "CI/CD Pipelines",
+    "CI/CD Pipelines (Jenkins)",
     "Cloud Infrastructure"
   ];
 

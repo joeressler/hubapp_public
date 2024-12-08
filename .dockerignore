@@ -10,7 +10,6 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
-node_modules/
 npm-debug.log
 Dockerfile
 .dockerignore

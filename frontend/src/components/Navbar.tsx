@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-
-interface User {
-  username: string;
-}
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [user] = useState<User | null>(null);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
+  };
 
   return (
     <nav className="navbar navbar-expand-lg" role="navigation" data-bs-theme="dark">
@@ -28,24 +35,33 @@ const Navbar: React.FC = () => {
             <li className="nav-item">
               <NavLink className="nav-link" to="/">Home</NavLink>
             </li>
-            <li className="nav-item dropdown">
+            <li className="nav-item">
               <NavLink className="nav-link" to="/games">Game List</NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/chat">GPT3.5 RAGLLM Bots</NavLink>
+              <NavLink className="nav-link" to="/chat">Game Help Bot</NavLink>
             </li>
           </ul>
           
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
             {user ? (
-              <>
-                <li className="nav-item">
-                  <span className="navbar-text">Logged in as: {user.username}</span>
-                </li>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/logout">Log Out</NavLink>
-                </li>
-              </>
+              <li className="nav-item user-dropdown">
+                <span className="nav-link" style={{ 
+                  color: '#38bdf8',
+                  textShadow: '0 0 5px rgba(56, 189, 248, 0.3)',
+                  cursor: 'pointer'
+                }}>
+                  {user.username}
+                </span>
+                <div className="user-dropdown-content">
+                  <button 
+                    onClick={handleLogout}
+                    className="user-dropdown-button"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              </li>
             ) : (
               <li className="nav-item">
                 <NavLink className="nav-link" to="/login">Log In</NavLink>

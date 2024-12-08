@@ -9,7 +9,7 @@ services:
       - "8080:8080"
     environment:
       - FLASK_APP=backend/app.py
-      - FLASK_ENV=development
+      - FLASK_ENV=production
       - PYTHONPATH=/app
       - NODE_ENV=production
       - CI=false

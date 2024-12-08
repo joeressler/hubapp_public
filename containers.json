@@ -3,6 +3,14 @@
         "image": ":flask-service.flask-container.latest",
         "ports": {
             "8080": "HTTP"
+        },
+        "environment": {
+            "MYSQL_HOST": "${MYSQL_HOST}",
+            "MYSQL_USER": "${MYSQL_USER}",
+            "MYSQL_PWD": "${MYSQL_PWD}",
+            "MYSQL_DATABASE": "${MYSQL_DATABASE}",
+            "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+            "FLASK_SECRET_KEY": "${FLASK_SECRET_KEY}"
         }
     }
 }

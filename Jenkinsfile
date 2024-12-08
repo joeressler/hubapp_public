@@ -29,10 +29,21 @@ pipeline {
                 environment name: 'AWS_DEPLOY', value: 'true'
             }
             steps {
-                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                                   credentialsId: 'd03bf61e-64e0-4efb-b6cc-9907081a93dd', 
-                                   secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                withCredentials([
+                    aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                        credentialsId: 'd03bf61e-64e0-4efb-b6cc-9907081a93dd', 
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'),
+                    string(credentialsId: 'MYSQL_HOST', variable: 'MYSQL_HOST'),
+                    string(credentialsId: 'MYSQL_USER', variable: 'MYSQL_USER'),
+                    string(credentialsId: 'MYSQL_PWD', variable: 'MYSQL_PWD'),
+                    string(credentialsId: 'MYSQL_DATABASE', variable: 'MYSQL_DATABASE'),
+                    string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY'),
+                    string(credentialsId: 'FLASK_SECRET_KEY', variable: 'FLASK_SECRET_KEY')
+                ]) {
+                    // Push container image
                     bat "aws lightsail push-container-image --service-name ${AWS_LIGHTSAIL_SERVICE} --label ${DOCKER_IMAGE} --image ${DOCKER_IMAGE}"
+                    
+                    // Deploy with environment variables
                     bat "aws lightsail create-container-service-deployment --service-name ${AWS_LIGHTSAIL_SERVICE} --containers file://containers.json --public-endpoint file://public-endpoint.json"
                 }
             }
@@ -43,16 +54,35 @@ pipeline {
                 environment name: 'GCR_DEPLOY', value: 'true'
             }
             steps {
-                withCredentials([file(credentialsId: 'google-cloud-key', variable: 'GC_KEY')]) {
-                    // Configure gcloud with service account
+                withCredentials([
+                    file(credentialsId: 'google-cloud-key', variable: 'GC_KEY'),
+                    string(credentialsId: 'MYSQL_HOST', variable: 'MYSQL_HOST'),
+                    string(credentialsId: 'MYSQL_USER', variable: 'MYSQL_USER'),
+                    string(credentialsId: 'MYSQL_PWD', variable: 'MYSQL_PWD'),
+                    string(credentialsId: 'MYSQL_DATABASE', variable: 'MYSQL_DATABASE'),
+                    string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY'),
+                    string(credentialsId: 'FLASK_SECRET_KEY', variable: 'FLASK_SECRET_KEY')
+                ]) {
+                    // Configure gcloud
                     bat 'gcloud auth activate-service-account --key-file=%GC_KEY%'
-                    
-                    // Configure Docker with gcloud credentials
                     bat 'gcloud auth configure-docker gcr.io -q'
                     
-                    // Push and deploy
+                    // Push and deploy with environment variables
                     bat "docker push ${GCR_IMAGE}:${VERSION}"
-                    bat "gcloud run deploy ${DOCKER_IMAGE} --project=${GCR_PROJECT} --image=${GCR_IMAGE}:${VERSION} --platform managed --region us-central1"
+                    bat """
+                        gcloud run deploy ${DOCKER_IMAGE} \
+                            --project=${GCR_PROJECT} \
+                            --image=${GCR_IMAGE}:${VERSION} \
+                            --platform managed \
+                            --region us-central1 \
+                            --set-env-vars ^
+                            MYSQL_HOST=%MYSQL_HOST%,^
+                            MYSQL_USER=%MYSQL_USER%,^
+                            MYSQL_PWD=%MYSQL_PWD%,^
+                            MYSQL_DATABASE=%MYSQL_DATABASE%,^
+                            OPENAI_API_KEY=%OPENAI_API_KEY%,^
+                            FLASK_SECRET_KEY=%FLASK_SECRET_KEY%
+                    """
                 }
             }
         }

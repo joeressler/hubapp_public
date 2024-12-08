@@ -9,9 +9,12 @@ const GameList: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const isJoe = user?.username === 'joe';
+
   useEffect(() => {
     const fetchGames = async () => {
       try {
+        setLoading(true);
         const gamesData = await apiService.getGames();
         setGames(gamesData);
       } catch (error) {
@@ -26,56 +29,73 @@ const GameList: React.FC = () => {
 
   const handleRateClick = (gameId: number) => {
     if (!user) {
-      // Match Flask's behavior of redirecting to login
       navigate('/login', { state: { returnURL: `/games/${gameId}/rate` } });
       return;
     }
     navigate(`/games/${gameId}/rate`);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="page-container">
+        <h1 className="page-title">Game Ratings</h1>
+        <div className="loading-container">
+          <div className="loading-spinner" />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container-fluid" id="bootstrap_override">
-      <div className="table-responsive" style={{ overflowX: 'auto' }}>
-        <table className="table table-striped table-hover table-dark">
-          <caption style={{ backgroundColor: 'rgba(50,50,50,0.25)' }}>
-            Here is a list of games I have rated along with my 100% status in them and the game's average user rating.
-          </caption>
-          <thead className="table-dark">
-            <tr>
-              <th></th>
-              <th>Game Name</th>
-              <th>Your Score</th>
-              <th>Have you fullcleared?</th>
-              <th>Average User Score</th>
-              <th>Number of user Fullclears</th>
-              <th>User Ratings</th>
-              <th>Developer</th>
-            </tr>
-          </thead>
-          <tbody>
-            {games.map(game => (
-              <tr key={game.id}>
-                <td>
-                  <button 
-                    className="ratingButton" 
-                    onClick={() => handleRateClick(game.id)}
-                  >
-                    Rate this game
-                  </button>
-                </td>
-                <td>{game.name}</td>
-                <td>{game.score || 'Not rated'}</td>
-                <td>{game.fullclear ? "Yes" : "No"}</td>
-                <td>{game.avgScore?.toFixed(1) || "No ratings"}</td>
-                <td>{game.fullclearCount}</td>
-                <td>{game.ratingCount}</td>
-                <td>{game.developer}</td>
+    <div className="page-container">
+      <h1 className="page-title">Game Ratings</h1>
+      <div className="table-container">
+        <div className="table-responsive">
+          <table className="table table-dark table-hover">
+            <caption style={{ 
+              color: '#e2e8f0',
+              textAlign: 'center',
+              captionSide: 'top',
+              marginBottom: '1rem',
+              textShadow: '0 0 5px rgba(56, 189, 248, 0.2)'
+            }}>
+              Here is a list of games I have rated along with my 100% status in them and the game's average user rating.
+            </caption>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Game Name</th>
+                <th>{isJoe ? "My Score" : "Joe's Score"}</th>
+                <th>{isJoe ? "Have I fullcleared?" : "Has Joe fullcleared?"}</th>
+                <th>Average User Score</th>
+                <th>Number of user Fullclears</th>
+                <th>User Ratings</th>
+                <th>Developer</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {games.map((game, index) => (
+                <tr key={game.id} style={{ animationDelay: `${0.1 + index * 0.05}s` }}>
+                  <td>
+                    <button 
+                      className="ratingButton"
+                      onClick={() => handleRateClick(game.id)}
+                    >
+                      Rate this game
+                    </button>
+                  </td>
+                  <td>{game.name}</td>
+                  <td>{game.score || 'Not rated'}</td>
+                  <td>{game.fullclear ? "Yes" : "No"}</td>
+                  <td>{game.avgScore?.toFixed(1) || "No ratings"}</td>
+                  <td>{game.fullclearCount}</td>
+                  <td>{game.ratingCount}</td>
+                  <td>{game.developer}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

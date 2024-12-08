@@ -36,39 +36,49 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-container">
-      <h1>Log In</h1>
-      {error && <div className="alert alert-danger">{error}</div>}
-      {flashMessage && (
-        <div className="alert alert-info">
-          {flashMessage}
-        </div>
-      )}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Username:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="form-control"
-            style={{ height: '2.5ch', width: '30ch' }}
-          />
-        </div>
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="form-control"
-            style={{ height: '2.5ch', width: '30ch' }}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">Log In</button>
-        <p>&nbsp;</p>
-        <p>Register <Link to="/register">here</Link> if you don't already have an account.</p>
-      </form>
+    <div className="page-container">
+      <h1 className="page-title">Log In</h1>
+      <div className="form-container">
+        {error && <div className="alert alert-danger">{error}</div>}
+        {flashMessage && (
+          <div className="alert alert-info">
+            {flashMessage}
+          </div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Username:</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="form-control"
+              style={{ width: '100%' }}
+            />
+          </div>
+          <div className="form-group">
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="form-control"
+              style={{ width: '100%' }}
+            />
+          </div>
+          <button type="submit" className="ratingButton" style={{ width: '100%' }}>
+            Log In
+          </button>
+          <p style={{ 
+            marginTop: '2rem', 
+            textAlign: 'center',
+            color: '#e2e8f0',
+            textShadow: '0 0 5px rgba(56, 189, 248, 0.2)'
+          }}>
+            Don't have an account? <Link to="/register" style={{ color: '#38bdf8' }}>Register here</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

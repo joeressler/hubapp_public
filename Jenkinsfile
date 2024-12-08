@@ -38,7 +38,12 @@ pipeline {
                     string(credentialsId: 'MYSQL_PWD', variable: 'MYSQL_PWD'),
                     string(credentialsId: 'MYSQL_DATABASE', variable: 'MYSQL_DATABASE'),
                     string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY'),
-                    string(credentialsId: 'FLASK_SECRET_KEY', variable: 'FLASK_SECRET_KEY')
+                    string(credentialsId: 'FLASK_SECRET_KEY', variable: 'FLASK_SECRET_KEY'),
+                    string(credentialsId: 'RECAPTCHA_PUBLIC_KEY', variable: 'RECAPTCHA_PUBLIC_KEY'),
+                    string(credentialsId: 'RECAPTCHA_PRIVATE_KEY', variable: 'RECAPTCHA_PRIVATE_KEY'),
+                    string(credentialsId: 'VERIFY_URL', variable: 'VERIFY_URL'),
+                    string(credentialsId: 'PASSWORD_PIN', variable: 'PASSWORD_PIN'),
+                    string(credentialsId: 'SENTRY_DSN', variable: 'SENTRY_DSN')
                 ]) {
                     // Push container image
                     bat "aws lightsail push-container-image --service-name ${AWS_LIGHTSAIL_SERVICE} --label ${DOCKER_IMAGE} --image ${DOCKER_IMAGE}"
@@ -61,7 +66,12 @@ pipeline {
                     string(credentialsId: 'MYSQL_PWD', variable: 'MYSQL_PWD'),
                     string(credentialsId: 'MYSQL_DATABASE', variable: 'MYSQL_DATABASE'),
                     string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY'),
-                    string(credentialsId: 'FLASK_SECRET_KEY', variable: 'FLASK_SECRET_KEY')
+                    string(credentialsId: 'FLASK_SECRET_KEY', variable: 'FLASK_SECRET_KEY'),
+                    string(credentialsId: 'RECAPTCHA_PUBLIC_KEY', variable: 'RECAPTCHA_PUBLIC_KEY'),
+                    string(credentialsId: 'RECAPTCHA_PRIVATE_KEY', variable: 'RECAPTCHA_PRIVATE_KEY'),
+                    string(credentialsId: 'VERIFY_URL', variable: 'VERIFY_URL'),
+                    string(credentialsId: 'PASSWORD_PIN', variable: 'PASSWORD_PIN'),
+                    string(credentialsId: 'SENTRY_DSN', variable: 'SENTRY_DSN')
                 ]) {
                     // Configure gcloud
                     bat 'gcloud auth activate-service-account --key-file=%GC_KEY%'
@@ -80,7 +90,12 @@ pipeline {
                             --set-env-vars MYSQL_PWD=%MYSQL_PWD% \
                             --set-env-vars MYSQL_DATABASE=%MYSQL_DATABASE% \
                             --set-env-vars OPENAI_API_KEY=%OPENAI_API_KEY% \
-                            --set-env-vars FLASK_SECRET_KEY=%FLASK_SECRET_KEY%
+                            --set-env-vars FLASK_SECRET_KEY=%FLASK_SECRET_KEY% \
+                            --set-env-vars RECAPTCHA_PUBLIC_KEY=%RECAPTCHA_PUBLIC_KEY% \
+                            --set-env-vars RECAPTCHA_PRIVATE_KEY=%RECAPTCHA_PRIVATE_KEY% \
+                            --set-env-vars VERIFY_URL=%VERIFY_URL% \
+                            --set-env-vars PASSWORD_PIN=%PASSWORD_PIN% \
+                            --set-env-vars SENTRY_DSN=%SENTRY_DSN%
                     """
                 }
             }

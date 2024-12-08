@@ -75,13 +75,12 @@ pipeline {
                             --image=${GCR_IMAGE}:${VERSION} \
                             --platform managed \
                             --region us-central1 \
-                            --set-env-vars ^
-                            MYSQL_HOST=%MYSQL_HOST%,^
-                            MYSQL_USER=%MYSQL_USER%,^
-                            MYSQL_PWD=%MYSQL_PWD%,^
-                            MYSQL_DATABASE=%MYSQL_DATABASE%,^
-                            OPENAI_API_KEY=%OPENAI_API_KEY%,^
-                            FLASK_SECRET_KEY=%FLASK_SECRET_KEY%
+                            --set-env-vars MYSQL_HOST=%MYSQL_HOST% \
+                            --set-env-vars MYSQL_USER=%MYSQL_USER% \
+                            --set-env-vars MYSQL_PWD=%MYSQL_PWD% \
+                            --set-env-vars MYSQL_DATABASE=%MYSQL_DATABASE% \
+                            --set-env-vars OPENAI_API_KEY=%OPENAI_API_KEY% \
+                            --set-env-vars FLASK_SECRET_KEY=%FLASK_SECRET_KEY%
                     """
                 }
             }

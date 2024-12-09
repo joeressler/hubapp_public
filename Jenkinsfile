@@ -64,7 +64,7 @@ pipeline {
 
                         def publicEndpoint = readJSON text: '{}'
                         publicEndpoint.containerName = 'flask' as String
-                        publicEndpoint.containerPort = '8080' as String
+                        publicEndpoint.containerPort = 8080 as Integer
                         writeJSON file: 'public-endpoint.json', json: publicEndpoint
                     }
                 }

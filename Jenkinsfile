@@ -49,39 +49,38 @@ pipeline {
                     bat "aws lightsail push-container-image --service-name ${AWS_LIGHTSAIL_SERVICE} --label ${DOCKER_IMAGE} --image ${DOCKER_IMAGE}"
                     
                     // Create containers.json using PowerShell
-                    powershell '''
-                        $containersJson = @{
+                    powershell """
+                        `$containersJson = @{
                             flask = @{
                                 image = ":flask-service.flask-container.latest"
                                 ports = @{
                                     "8080" = "HTTP"
                                 }
                                 environment = @{
-                                    MYSQL_HOST = "%MYSQL_HOST%"
-                                    MYSQL_USER = "%MYSQL_USER%"
-                                    MYSQL_PWD = "%MYSQL_PWD%"
-                                    MYSQL_DATABASE = "%MYSQL_DATABASE%"
-                                    OPENAI_API_KEY = "%OPENAI_API_KEY%"
-                                    FLASK_SECRET_KEY = "%FLASK_SECRET_KEY%"
-                                    RECAPTCHA_PUBLIC_KEY = "%RECAPTCHA_PUBLIC_KEY%"
-                                    RECAPTCHA_PRIVATE_KEY = "%RECAPTCHA_PRIVATE_KEY%"
-                                    VERIFY_URL = "%VERIFY_URL%"
-                                    PASSWORD_PIN = "%PASSWORD_PIN%"
-                                    SENTRY_DSN = "%SENTRY_DSN%"
+                                    MYSQL_HOST = "$MYSQL_HOST"
+                                    MYSQL_USER = "$MYSQL_USER"
+                                    MYSQL_PWD = "$MYSQL_PWD"
+                                    MYSQL_DATABASE = "$MYSQL_DATABASE"
+                                    OPENAI_API_KEY = "$OPENAI_API_KEY"
+                                    FLASK_SECRET_KEY = "$FLASK_SECRET_KEY"
+                                    RECAPTCHA_PUBLIC_KEY = "$RECAPTCHA_PUBLIC_KEY"
+                                    RECAPTCHA_PRIVATE_KEY = "$RECAPTCHA_PRIVATE_KEY"
+                                    VERIFY_URL = "$VERIFY_URL"
+                                    PASSWORD_PIN = "$PASSWORD_PIN"
+                                    SENTRY_DSN = "$SENTRY_DSN"
                                 }
                             }
                         }
-                        $containersJson | ConvertTo-Json -Depth 10 | Set-Content containers.json
-                    '''
+                        `$containersJson | ConvertTo-Json -Depth 10 | Set-Content containers.json
+                    """
                     
                     // Create public-endpoint.json
-                    powershell '''
-                        $publicEndpointJson = @{
+                    powershell """
+                        @{
                             containerName = "flask"
                             containerPort = 8080
-                        }
-                        $publicEndpointJson | ConvertTo-Json -Depth 10 | Set-Content public-endpoint.json
-                    '''
+                        } | ConvertTo-Json | Set-Content public-endpoint.json
+                    """
                     
                     // Deploy with the generated configuration
                     bat "aws lightsail create-container-service-deployment --service-name ${AWS_LIGHTSAIL_SERVICE} --containers file://containers.json --public-endpoint file://public-endpoint.json"

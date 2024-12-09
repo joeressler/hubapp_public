@@ -49,22 +49,22 @@ pipeline {
                         containers.flask.ports = readJSON text: '{}'
                         containers.flask.ports['8080'] = 'HTTP' as String
                         containers.flask.environment = readJSON text: '{}'
-                        containers.flask.environment['MYSQL_HOST'] = '%MYSQL_HOST%' as String
-                        containers.flask.environment['MYSQL_USER'] = '%MYSQL_USER%' as String
-                        containers.flask.environment['MYSQL_PWD'] = '%MYSQL_PWD%' as String
-                        containers.flask.environment['MYSQL_DATABASE'] = '%MYSQL_DATABASE%' as String
-                        containers.flask.environment['OPENAI_API_KEY'] = '%OPENAI_API_KEY%' as String
-                        containers.flask.environment['FLASK_SECRET_KEY'] = '%FLASK_SECRET_KEY%' as String
-                        containers.flask.environment['RECAPTCHA_PUBLIC_KEY'] = '%RECAPTCHA_PUBLIC_KEY%' as String
-                        containers.flask.environment['RECAPTCHA_PRIVATE_KEY'] = '%RECAPTCHA_PRIVATE_KEY%' as String
-                        containers.flask.environment['VERIFY_URL'] = '%VERIFY_URL%' as String
-                        containers.flask.environment['PASSWORD_PIN'] = '%PASSWORD_PIN%' as String
-                        containers.flask.environment['SENTRY_DSN'] = '%SENTRY_DSN%' as String
+                        containers.flask.environment['MYSQL_HOST'] = MYSQL_HOST as String
+                        containers.flask.environment['MYSQL_USER'] = MYSQL_USER as String
+                        containers.flask.environment['MYSQL_PWD'] = MYSQL_PWD as String
+                        containers.flask.environment['MYSQL_DATABASE'] = MYSQL_DATABASE as String
+                        containers.flask.environment['OPENAI_API_KEY'] = OPENAI_API_KEY as String
+                        containers.flask.environment['FLASK_SECRET_KEY'] = FLASK_SECRET_KEY as String
+                        containers.flask.environment['RECAPTCHA_PUBLIC_KEY'] = RECAPTCHA_PUBLIC_KEY as String
+                        containers.flask.environment['RECAPTCHA_PRIVATE_KEY'] = RECAPTCHA_PRIVATE_KEY as String
+                        containers.flask.environment['VERIFY_URL'] = VERIFY_URL as String
+                        containers.flask.environment['PASSWORD_PIN'] = PASSWORD_PIN as String
+                        containers.flask.environment['SENTRY_DSN'] = SENTRY_DSN as String
                         writeJSON file: 'containers.json', json: containers
 
                         def publicEndpoint = readJSON text: '{}'
                         publicEndpoint.containerName = 'flask' as String
-                        publicEndpoint.containerPort = 8080 as Integer
+                        publicEndpoint.containerPort = '8080' as String
                         writeJSON file: 'public-endpoint.json', json: publicEndpoint
                     }
                 }

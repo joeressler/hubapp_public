@@ -26,38 +26,6 @@ pipeline {
 
         stage('Create Necessary Deployment JSON Files') {
             steps {
-                script {
-                    def containers = readJSON text: '{}'
-                    containers.flask.image = ':flask-service.flask-container.latest' as String
-                    containers.flask.ports = readJSON text: '{}'
-                    containers.flask.ports['8080'] = 'HTTP' as String
-                    containers.flask.environment = readJSON text: '{}'
-                    containers.flask.environment['MYSQL_HOST'] = '%MYSQL_HOST%' as String
-                    containers.flask.environment['MYSQL_USER'] = '%MYSQL_USER%' as String
-                    containers.flask.environment['MYSQL_PWD'] = '%MYSQL_PWD%' as String
-                    containers.flask.environment['MYSQL_DATABASE'] = '%MYSQL_DATABASE%' as String
-                    containers.flask.environment['OPENAI_API_KEY'] = '%OPENAI_API_KEY%' as String
-                    containers.flask.environment['FLASK_SECRET_KEY'] = '%FLASK_SECRET_KEY%' as String
-                    containers.flask.environment['RECAPTCHA_PUBLIC_KEY'] = '%RECAPTCHA_PUBLIC_KEY%' as String
-                    containers.flask.environment['RECAPTCHA_PRIVATE_KEY'] = '%RECAPTCHA_PRIVATE_KEY%' as String
-                    containers.flask.environment['VERIFY_URL'] = '%VERIFY_URL%' as String
-                    containers.flask.environment['PASSWORD_PIN'] = '%PASSWORD_PIN%' as String
-                    containers.flask.environment['SENTRY_DSN'] = '%SENTRY_DSN%' as String
-                    writeJSON file: 'containers.json', json: containers
-
-                    def publicEndpoint = readJSON text: '{}'
-                    publicEndpoint.containerName = 'flask' as String
-                    publicEndpoint.containerPort = 8080 as Integer
-                    writeJSON file: 'public-endpoint.json', json: publicEndpoint
-                }
-            }
-        }
-        
-        stage('Deploy to AWS Lightsail') {
-            when {
-                environment name: 'AWS_DEPLOY', value: 'true'
-            }
-            steps {
                 withCredentials([
                     aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
                         credentialsId: 'd03bf61e-64e0-4efb-b6cc-9907081a93dd', 
@@ -74,40 +42,46 @@ pipeline {
                     string(credentialsId: 'PASSWORD_PIN', variable: 'PASSWORD_PIN'),
                     string(credentialsId: 'SENTRY_DSN', variable: 'SENTRY_DSN')
                 ]) {
+                    script {
+                        def containers = readJSON text: '{}'
+                        containers.flask = readJSON text: '{}'
+                        containers.flask.image = ':flask-service.flask-container.latest' as String
+                        containers.flask.ports = readJSON text: '{}'
+                        containers.flask.ports['8080'] = 'HTTP' as String
+                        containers.flask.environment = readJSON text: '{}'
+                        containers.flask.environment['MYSQL_HOST'] = '%MYSQL_HOST%' as String
+                        containers.flask.environment['MYSQL_USER'] = '%MYSQL_USER%' as String
+                        containers.flask.environment['MYSQL_PWD'] = '%MYSQL_PWD%' as String
+                        containers.flask.environment['MYSQL_DATABASE'] = '%MYSQL_DATABASE%' as String
+                        containers.flask.environment['OPENAI_API_KEY'] = '%OPENAI_API_KEY%' as String
+                        containers.flask.environment['FLASK_SECRET_KEY'] = '%FLASK_SECRET_KEY%' as String
+                        containers.flask.environment['RECAPTCHA_PUBLIC_KEY'] = '%RECAPTCHA_PUBLIC_KEY%' as String
+                        containers.flask.environment['RECAPTCHA_PRIVATE_KEY'] = '%RECAPTCHA_PRIVATE_KEY%' as String
+                        containers.flask.environment['VERIFY_URL'] = '%VERIFY_URL%' as String
+                        containers.flask.environment['PASSWORD_PIN'] = '%PASSWORD_PIN%' as String
+                        containers.flask.environment['SENTRY_DSN'] = '%SENTRY_DSN%' as String
+                        writeJSON file: 'containers.json', json: containers
+
+                        def publicEndpoint = readJSON text: '{}'
+                        publicEndpoint.containerName = 'flask' as String
+                        publicEndpoint.containerPort = 8080 as Integer
+                        writeJSON file: 'public-endpoint.json', json: publicEndpoint
+                }
+            }
+        }
+        
+        stage('Deploy to AWS Lightsail') {
+            when {
+                environment name: 'AWS_DEPLOY', value: 'true'
+            }
+            steps {
+                withCredentials([
+                    aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                        credentialsId: 'd03bf61e-64e0-4efb-b6cc-9907081a93dd', 
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
                     // Push container image
                     bat "aws lightsail push-container-image --service-name ${AWS_LIGHTSAIL_SERVICE} --label ${DOCKER_IMAGE} --image ${DOCKER_IMAGE}"
-                    
-                    // Create deployment JSON with environment variables
-                bat '''
-                    echo {
-                        "flask": {
-                            "image": ":flask-service.flask-container.latest",
-                            "ports": {
-                                "8080": "HTTP"
-                            },
-                            "environment": {
-                                "MYSQL_HOST": "%MYSQL_HOST%",
-                                "MYSQL_USER": "%MYSQL_USER%",
-                                "MYSQL_PWD": "%MYSQL_PWD%",
-                                "MYSQL_DATABASE": "%MYSQL_DATABASE%",
-                                "OPENAI_API_KEY": "%OPENAI_API_KEY%",
-                                "FLASK_SECRET_KEY": "%FLASK_SECRET_KEY%",
-                                "RECAPTCHA_PUBLIC_KEY": "%RECAPTCHA_PUBLIC_KEY%",
-                                "RECAPTCHA_PRIVATE_KEY": "%RECAPTCHA_PRIVATE_KEY%",
-                                "VERIFY_URL": "%VERIFY_URL%",
-                                "PASSWORD_PIN": "%PASSWORD_PIN%",
-                                "SENTRY_DSN": "%SENTRY_DSN%"
-                                }
-                            }
-                        } > containers.json
-                    ''' 
-                bat '''
-                    echo {
-                        "containerName": "flask",
-                        "containerPort": 8080
-                    } > public-endpoint.json
-                '''
-
                     // Deploy with environment variables
                     bat "aws lightsail create-container-service-deployment --service-name ${AWS_LIGHTSAIL_SERVICE} --containers file://containers.json --public-endpoint file://public-endpoint.json"
                 }

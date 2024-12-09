@@ -23,6 +23,35 @@ pipeline {
                 }
             }
         }
+
+        stage('Create Necessary Deployment JSON Files') {
+            steps {
+                script {
+                    def containers = readJSON text: '{}'
+                    containers.flask.image = ':flask-service.flask-container.latest' as String
+                    containers.flask.ports = readJSON text: '{}'
+                    containers.flask.ports['8080'] = 'HTTP' as String
+                    containers.flask.environment = readJSON text: '{}'
+                    containers.flask.environment['MYSQL_HOST'] = '%MYSQL_HOST%' as String
+                    containers.flask.environment['MYSQL_USER'] = '%MYSQL_USER%' as String
+                    containers.flask.environment['MYSQL_PWD'] = '%MYSQL_PWD%' as String
+                    containers.flask.environment['MYSQL_DATABASE'] = '%MYSQL_DATABASE%' as String
+                    containers.flask.environment['OPENAI_API_KEY'] = '%OPENAI_API_KEY%' as String
+                    containers.flask.environment['FLASK_SECRET_KEY'] = '%FLASK_SECRET_KEY%' as String
+                    containers.flask.environment['RECAPTCHA_PUBLIC_KEY'] = '%RECAPTCHA_PUBLIC_KEY%' as String
+                    containers.flask.environment['RECAPTCHA_PRIVATE_KEY'] = '%RECAPTCHA_PRIVATE_KEY%' as String
+                    containers.flask.environment['VERIFY_URL'] = '%VERIFY_URL%' as String
+                    containers.flask.environment['PASSWORD_PIN'] = '%PASSWORD_PIN%' as String
+                    containers.flask.environment['SENTRY_DSN'] = '%SENTRY_DSN%' as String
+                    writeJSON file: 'containers.json', json: containers
+
+                    def publicEndpoint = readJSON text: '{}'
+                    publicEndpoint.containerName = 'flask' as String
+                    publicEndpoint.containerPort = 8080 as Integer
+                    writeJSON file: 'public-endpoint.json', json: publicEndpoint
+                }
+            }
+        }
         
         stage('Deploy to AWS Lightsail') {
             when {
@@ -48,41 +77,38 @@ pipeline {
                     // Push container image
                     bat "aws lightsail push-container-image --service-name ${AWS_LIGHTSAIL_SERVICE} --label ${DOCKER_IMAGE} --image ${DOCKER_IMAGE}"
                     
-                    // Create containers.json using PowerShell
-                    powershell """
-                        `$containersJson = @{
-                            flask = @{
-                                image = ":flask-service.flask-container.latest"
-                                ports = @{
-                                    "8080" = "HTTP"
-                                }
-                                environment = @{
-                                    MYSQL_HOST = "$MYSQL_HOST"
-                                    MYSQL_USER = "$MYSQL_USER"
-                                    MYSQL_PWD = "$MYSQL_PWD"
-                                    MYSQL_DATABASE = "$MYSQL_DATABASE"
-                                    OPENAI_API_KEY = "$OPENAI_API_KEY"
-                                    FLASK_SECRET_KEY = "$FLASK_SECRET_KEY"
-                                    RECAPTCHA_PUBLIC_KEY = "$RECAPTCHA_PUBLIC_KEY"
-                                    RECAPTCHA_PRIVATE_KEY = "$RECAPTCHA_PRIVATE_KEY"
-                                    VERIFY_URL = "$VERIFY_URL"
-                                    PASSWORD_PIN = "$PASSWORD_PIN"
-                                    SENTRY_DSN = "$SENTRY_DSN"
+                    // Create deployment JSON with environment variables
+                bat '''
+                    echo {
+                        "flask": {
+                            "image": ":flask-service.flask-container.latest",
+                            "ports": {
+                                "8080": "HTTP"
+                            },
+                            "environment": {
+                                "MYSQL_HOST": "%MYSQL_HOST%",
+                                "MYSQL_USER": "%MYSQL_USER%",
+                                "MYSQL_PWD": "%MYSQL_PWD%",
+                                "MYSQL_DATABASE": "%MYSQL_DATABASE%",
+                                "OPENAI_API_KEY": "%OPENAI_API_KEY%",
+                                "FLASK_SECRET_KEY": "%FLASK_SECRET_KEY%",
+                                "RECAPTCHA_PUBLIC_KEY": "%RECAPTCHA_PUBLIC_KEY%",
+                                "RECAPTCHA_PRIVATE_KEY": "%RECAPTCHA_PRIVATE_KEY%",
+                                "VERIFY_URL": "%VERIFY_URL%",
+                                "PASSWORD_PIN": "%PASSWORD_PIN%",
+                                "SENTRY_DSN": "%SENTRY_DSN%"
                                 }
                             }
-                        }
-                        `$containersJson | ConvertTo-Json -Depth 10 | Set-Content containers.json
-                    """
-                    
-                    // Create public-endpoint.json
-                    powershell """
-                        @{
-                            containerName = "flask"
-                            containerPort = 8080
-                        } | ConvertTo-Json | Set-Content public-endpoint.json
-                    """
-                    
-                    // Deploy with the generated configuration
+                        } > containers.json
+                    ''' 
+                bat '''
+                    echo {
+                        "containerName": "flask",
+                        "containerPort": 8080
+                    } > public-endpoint.json
+                '''
+
+                    // Deploy with environment variables
                     bat "aws lightsail create-container-service-deployment --service-name ${AWS_LIGHTSAIL_SERVICE} --containers file://containers.json --public-endpoint file://public-endpoint.json"
                 }
             }

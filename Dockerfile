@@ -43,6 +43,8 @@ RUN apt-get update && \
     python3-dev \
     libffi-dev \
     tree \
+    libcrypt1 \
+    openssl \
     && rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir --upgrade pip setuptools wheel
 

@@ -22,10 +22,12 @@ pipeline {
                 script {
                     // Build docker compose images
                     bat "docker-compose build"
+
+                    bat "docker compose ps"
                     
                     // Save docker image to .tar
-                    bat "docker save -o flask-container.tar ${DOCKER_IMAGE}"
-                    
+                    bat "docker save -o flask-container.tar flask-deployment-web"
+
                     sshagent(['ec2-ssh-key']) {
                         // Transfer files to EC2
                         bat "scp -i ${EC2_KEY_PATH} flask-container.tar Dockerfile docker-compose.yml ${EC2_HOST}:~/"

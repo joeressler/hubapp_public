@@ -34,12 +34,16 @@ pipeline {
                         string(credentialsId: 'PASSWORD_PIN', variable: 'PASSWORD_PIN'),
                         string(credentialsId: 'SENTRY_DSN', variable: 'SENTRY_DSN')
                     ]) {
-                        bat "docker-compose build"
+                        bat "docker compose build"
 
-                        bat "docker images"
+                        bat "docker compose images"
+
+                        bat "docker compose ps"
+
+                        bat "docker compose top"
                     }
                     // Save docker image to .tar
-                    bat "docker save -o flask-container.tar flask-deployment-web"
+                    bat "docker save -o flask-container.tar ${DOCKER_IMAGE}"
 
                     sshagent(['ec2-ssh-key']) {
                         // Transfer files to EC2

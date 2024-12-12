@@ -21,19 +21,32 @@ pipeline {
             steps {
                 script {
                     // Build docker compose images
-                    bat "docker-compose build"
+                    withCredentials([
+                        string(credentialsId: 'MYSQL_HOST', variable: 'MYSQL_HOST'),
+                        string(credentialsId: 'MYSQL_USER', variable: 'MYSQL_USER'),
+                        string(credentialsId: 'MYSQL_PWD', variable: 'MYSQL_PWD'),
+                        string(credentialsId: 'MYSQL_DATABASE', variable: 'MYSQL_DATABASE'),
+                        string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY'),
+                        string(credentialsId: 'FLASK_SECRET_KEY', variable: 'FLASK_SECRET_KEY'),
+                        string(credentialsId: 'RECAPTCHA_PUBLIC_KEY', variable: 'RECAPTCHA_PUBLIC_KEY'),
+                        string(credentialsId: 'RECAPTCHA_PRIVATE_KEY', variable: 'RECAPTCHA_PRIVATE_KEY'),
+                        string(credentialsId: 'VERIFY_URL', variable: 'VERIFY_URL'),
+                        string(credentialsId: 'PASSWORD_PIN', variable: 'PASSWORD_PIN'),
+                        string(credentialsId: 'SENTRY_DSN', variable: 'SENTRY_DSN')
+                    ]) {
+                        bat "docker-compose build"
 
-                    bat "docker compose ps"
-                    
+                        bat "docker images"
+                    }
                     // Save docker image to .tar
                     bat "docker save -o flask-container.tar flask-deployment-web"
 
                     sshagent(['ec2-ssh-key']) {
                         // Transfer files to EC2
-                        bat "scp -i ${EC2_KEY_PATH} flask-container.tar Dockerfile docker-compose.yml ${EC2_HOST}:~/"
+                        bat "scp -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ${EC2_HOST}:~/"
                         
                         // SSH into EC2 and load the docker image
-                        bat "ssh -i ${EC2_KEY_PATH} ${EC2_HOST} 'docker load -i flask-container.tar && docker-compose up -d'"
+                        bat "ssh -o StrictHostKeyChecking=no ${EC2_HOST} 'docker load -i flask-container.tar && docker-compose up -d'"
                     }
                     
                 }

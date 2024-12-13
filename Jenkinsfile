@@ -5,7 +5,6 @@ pipeline {
         VERSION = '1.00'
         DOCKER_IMAGE = 'flask-container'
         GCR_IMAGE = 'gcr.io/lively-machine-427223-j0/flask-container'
-        EC2_HOST = 'ec2-user@ec2-3-90-221-218.compute-1.amazonaws.com'
         EC2_KEY_PATH = 'C:\\ProgramData\\ssh\\ec2.pem'
         GCR_PROJECT = 'lively-machine-427223-j0'
         AWS_DEFAULT_REGION = 'us-east-1'
@@ -46,9 +45,9 @@ pipeline {
 
                     // Use Pageant for SSH
                     // Transfer files to EC2
-                    bat "scp -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ${EC2_HOST}:~/"
+                    bat "scp -i ${EC2_KEY_PATH} -vv -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ec2-user@ec2-3-90-221-218.compute-1.amazonaws.com:~/"
                     // SSH into EC2 and load the docker image
-                    bat "ssh -o StrictHostKeyChecking=no ${EC2_HOST} 'docker load -i flask-container.tar && docker-compose up -d'"
+                    bat "ssh -i ${EC2_KEY_PATH} -vv -o StrictHostKeyChecking=no ec2-user@ec2-3-90-221-218.compute-1.amazonaws.com 'docker load -i flask-container.tar && docker-compose up -d'"
                     
                     
                 }

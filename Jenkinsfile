@@ -5,7 +5,7 @@ pipeline {
         VERSION = '1.00'
         DOCKER_IMAGE = 'flask-container'
         GCR_IMAGE = 'gcr.io/lively-machine-427223-j0/flask-container'
-        EC2_KEY_PATH = 'C:\\ProgramData\\ssh\\ec2.pem'
+        EC2_KEY_PATH = 'C:\\ssh_keys\\ec2.pem'
         GCR_PROJECT = 'lively-machine-427223-j0'
         AWS_DEFAULT_REGION = 'us-east-1'
         AWS_DEPLOY = 'true'

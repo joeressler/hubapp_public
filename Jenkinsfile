@@ -44,7 +44,7 @@ pipeline {
                     // Save docker image to .tar
                     bat "docker save -o flask-container.tar ${DOCKER_IMAGE}"
 
-                    sshagent(['ec2-ssh-key']) {
+                    sshagent(credentials: ['ec2-ssh-key']) {
                         // Transfer files to EC2
                         bat "scp -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ${EC2_HOST}:~/"
                         

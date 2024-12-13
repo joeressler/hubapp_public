@@ -14,6 +14,11 @@ pipeline {
     }
     
     stages {
+        stage('Build Docker Image') {
+            steps {
+                bat "docker build -t ${DOCKER_IMAGE} ."
+            }
+        }
         stage('Deploy to EC2') {
             when {
                 environment name: 'AWS_DEPLOY', value: 'true'
@@ -35,12 +40,6 @@ pipeline {
                         string(credentialsId: 'SENTRY_DSN', variable: 'SENTRY_DSN')
                     ]) {
                         bat "docker compose build"
-
-                        bat "docker compose images"
-
-                        bat "docker compose ps"
-
-                        bat "docker compose top"
                     }
                     // Save docker image to .tar
                     bat "docker save -o flask-container.tar ${DOCKER_IMAGE}"

@@ -45,7 +45,7 @@ pipeline {
 
                     // Use Pageant for SSH
                     // Transfer files to EC2
-                    bat "scp -i ${EC2_KEY_PATH} -vv -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ec2-user@ec2-3-90-221-218.compute-1.amazonaws.com:~/"
+                    bat "scp -i ${EC2_KEY_PATH} -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ec2-user@ec2-3-90-221-218.compute-1.amazonaws.com:~/"
                     // SSH into EC2 and load the docker image
                     bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-90-221-218.compute-1.amazonaws.com 'docker load -i flask-container.tar'"
                     bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-90-221-218.compute-1.amazonaws.com 'docker-compose up -d'"

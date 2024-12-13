@@ -44,12 +44,10 @@ pipeline {
                     // Save docker image to .tar
                     bat "docker save -o flask-container.tar ${DOCKER_IMAGE}"
 
-                    withCredentials([
-                        file(credentialsId: 'ec2-pem', variable: 'EC2_SSH_KEY')
-                    ]) {
-                        bat "scp -i $EC2_SSH_KEY -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ${EC2_HOST}:~/"
+                    sshagent(['ec2-pem']) {
+                        bat "scp -o StrictHostKeyChecking=no flask-container.tar Dockerfile docker-compose.yml ${EC2_HOST}:~/"
                         // SSH into EC2 and load the docker image
-                        bat "ssh -i $EC2_SSH_KEY -o StrictHostKeyChecking=no ${EC2_HOST} 'docker load -i flask-container.tar && docker-compose up -d'"
+                        bat "ssh -o StrictHostKeyChecking=no ${EC2_HOST} 'docker load -i flask-container.tar && docker-compose up -d'"
                     }
                     
                 }

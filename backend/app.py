@@ -8,6 +8,13 @@ from modules.users import User
 from modules.game_db import GameDB
 from modules.chatbot import ChatBot
 from datetime import datetime
+import requests
+import base64
+from vosk import Model, KaldiRecognizer
+import wave
+import json
+import io
+from flask_socketio import SocketIO, emit
 
 # Load environment variables
 load_dotenv()
@@ -24,7 +31,20 @@ app.config['VERIFY_URL'] = os.environ.get('VERIFY_URL')
 app.config['PASSWORD_PIN'] = os.environ.get('PASSWORD_PIN')
 
 # Initialize CORS with credentials support
-CORS(app, supports_credentials=True)
+CORS(app, 
+     supports_credentials=True,
+     resources={
+         r"/api/*": {
+             "origins": ["http://localhost:3000", "http://frontend:3000"],
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "expose_headers": ["Content-Range", "X-Content-Range"],
+             "supports_credentials": True
+         }
+     })
+
+# Initialize SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 def login_required(f):
     @wraps(f)
@@ -107,6 +127,7 @@ def check_auth():
     return jsonify(None), 401
 
 @app.route('/api/games')
+@login_required
 def get_games():
     try:
         games = GameDB.listgames()
@@ -119,16 +140,29 @@ def get_games():
         return jsonify({'error': 'Internal server error: ' + str(e)}), 500
 
 @app.route('/api/chat', methods=['POST'])
-@login_required
 def chat():
     data = request.json
     question = data.get('message')
     context = data.get('context', 'general')
     user_id = session['user_id']
+    voice_response = data.get('voice', False)
 
     try:
-        response = ChatBot.get_response(question, context)
+        base_path = "/app/backend/utils/vector_db/storage"
+        response = ChatBot.get_response(question, context, base_path=base_path)
         ChatBot.log(context, question, str(response), user_id)
+        
+        if voice_response:
+            TTS_URL = "http://voice:8081/tts"
+            text_to_speak = str(response)
+            print(f"Sending to TTS: {text_to_speak}")  # Add debug logging
+            tts_response = requests.post(TTS_URL, json={'text': text_to_speak})
+            audio_data = tts_response.content
+            return jsonify({
+                'response': text_to_speak,
+                'audio': base64.b64encode(audio_data).decode('utf-8')
+            })
+            
         return jsonify({'response': str(response)})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -196,6 +230,128 @@ def debug_static():
             'files': static_files
         })
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+model = Model("models/vosk-model-small-en-us-0.15")
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on('audio')
+def handle_audio(data):
+    try:
+        # Decode base64 audio data
+        audio_data = base64.b64decode(data['audio'].split(',')[1])
+        
+        # Use Vosk to transcribe audio
+        rec = KaldiRecognizer(model, 16000)
+        audio_stream = io.BytesIO(audio_data)
+        wf = wave.open(audio_stream, "rb")
+        
+        text = ""
+        while True:
+            data = wf.readframes(4000)
+            if len(data) == 0:
+                break
+            if rec.AcceptWaveform(data):
+                result = json.loads(rec.Result())
+                text += result.get('text', '') + ' '
+        
+        final_result = json.loads(rec.FinalResult())
+        text += final_result.get('text', '')
+
+        # Send transcription back to client
+        emit('transcription', {'text': text.strip(), 'context': data['context']})
+    except Exception as e:
+        emit('error', {'error': str(e)})
+
+@app.errorhandler(500)
+def internal_error(error):
+    app.logger.error(f'Server Error: {error}')
+    return jsonify(error=str(error)), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f'Unhandled Exception: {e}')
+    return jsonify(error=str(e)), 500
+
+@app.route('/api/debug/storage')
+def debug_storage():
+    try:
+        paths_to_check = [
+            "/app/utils/vector_db/storage",
+            "/app/backend/utils/vector_db/storage",
+            "/utils/vector_db/storage"
+        ]
+        
+        storage_info = {path: {
+            'exists': os.path.exists(path),
+            'is_dir': os.path.isdir(path) if os.path.exists(path) else False,
+            'contents': os.listdir(path) if os.path.exists(path) and os.path.isdir(path) else [],
+            'cwd': os.getcwd(),
+            'absolute_path': os.path.abspath(path)
+        } for path in paths_to_check}
+        
+        return jsonify(storage_info)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Add a new route for handling transcription requests
+@app.route('/api/voice/transcribe', methods=['POST'])
+def transcribe_audio():
+    try:
+        audio_file = request.files.get('audio')
+        if not audio_file:
+            return jsonify({'error': 'No audio file received'}), 400
+
+        # Read the audio file
+        audio_data = audio_file.read()
+        app.logger.info(f"Received audio data size: {len(audio_data)} bytes")
+        
+        # Check first few bytes for WAV header
+        app.logger.info(f"First 12 bytes: {audio_data[:12]}")
+        
+        audio_stream = io.BytesIO(audio_data)
+        
+        # Use Vosk to transcribe
+        rec = KaldiRecognizer(model, 16000)
+        wf = wave.open(audio_stream, "rb")
+        
+        app.logger.info(f"WAV file params: channels={wf.getnchannels()}, " 
+                       f"width={wf.getsampwidth()}, "
+                       f"rate={wf.getframerate()}, "
+                       f"frames={wf.getnframes()}")
+
+        text = ""
+        total_frames = 0
+        while True:
+            data = wf.readframes(4000)
+            if len(data) == 0:
+                break
+            total_frames += len(data)
+            if rec.AcceptWaveform(data):
+                result = json.loads(rec.Result())
+                partial_text = result.get('text', '')
+                app.logger.info(f"Partial transcription: {partial_text}")
+                text += partial_text + ' '
+        
+        final_result = json.loads(rec.FinalResult())
+        final_text = final_result.get('text', '')
+        app.logger.info(f"Final transcription part: {final_text}")
+        text += final_text
+
+        transcribed_text = text.strip()
+        app.logger.info(f"Total frames processed: {total_frames}")
+        app.logger.info(f"Final transcribed text: {transcribed_text}")
+        return jsonify({'text': transcribed_text})
+    except Exception as e:
+        app.logger.error(f"Transcription error: {str(e)}")
+        app.logger.exception("Full traceback:")
         return jsonify({'error': str(e)}), 500
 
 # Your API routes here...

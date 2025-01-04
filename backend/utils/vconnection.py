@@ -21,7 +21,13 @@ class VConnection(object):
             )
             return self.connection
         except mysql.connector.Error as err:
-            print(f"Connection error: {err}")
+            print(f"Connection error details:")
+            print(f"  Error code: {err.errno}")
+            print(f"  Error message: {err.msg}")
+            print(f"  SQL State: {err.sqlstate}")
+            print(f"  Host: {os.getenv('MYSQL_HOST')}")
+            print(f"  Database: {os.getenv('MYSQL_DATABASE')}")
+            print(f"  User: {os.getenv('MYSQL_USER')}")
             raise
 
     def __exit__(self, type, value, tb):

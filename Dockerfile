@@ -84,3 +84,11 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 
 # Start the Flask application with debug logging
 CMD ["flask", "--debug", "run", "--host", "0.0.0.0", "--port", "8080"]
+
+# Download Vosk model
+RUN mkdir -p models && \
+    cd models && \
+    wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip && \
+    unzip vosk-model-small-en-us-0.15.zip && \
+    mv vosk-model-small-en-us-0.15 vosk-model-small-en-us-0.15 && \
+    rm vosk-model-small-en-us-0.15.zip

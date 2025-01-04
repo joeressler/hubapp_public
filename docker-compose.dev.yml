@@ -1,35 +1,87 @@
 services:
-  web:
+  frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.dev
-      args:
-        - NODE_ENV=development
-      
-    ports:
-      - "8080:8080"
-    environment:
-      - FLASK_APP=backend/app.py
-      - FLASK_ENV=development
-      - FLASK_DEBUG=1
-      - PYTHONPATH=/app
-      - NODE_ENV=development
-      - CI=false
-      - GENERATE_SOURCEMAP=false
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    command: npm start
     volumes:
-      - ./backend:/app/backend
-      - ./.env:/app/.env:ro
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: unless-stopped
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - WDS_SOCKET_PORT=0
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - FAST_REFRESH=false
+      - DANGEROUSLY_DISABLE_HOST_CHECK=true
+    user: "1001:1001"
     networks:
       - app-network
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - PYTHONPATH=/app/backend
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PWD=${MYSQL_PWD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
+      - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
+      - VERIFY_URL=${VERIFY_URL}
+      - PASSWORD_PIN=${PASSWORD_PIN}
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      - ./backend:/app/backend
+      - vosk-models:/app/models
+      - ./backend/utils/vector_db/storage:/app/backend/utils/vector_db/storage
+    env_file:
+      - .env
+    command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080", "--debug"]
+    networks:
+      - app-network
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  voice:
+    build:
+      context: ./voice
+      dockerfile: Dockerfile
+    volumes:
+      - ./voice:/app
+      - voice_audio:/app/audio
+    command: ["go", "run", "main.go"]
+    networks:
+      - app-network
+    ports:
+      - "8081:8081"
+    environment:
+      - CGO_ENABLED=1
+      - GIN_MODE=debug
+    depends_on:
+      - backend
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  frontend_node_modules:
+  vosk-models:
+  voice_audio:

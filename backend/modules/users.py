@@ -2,7 +2,7 @@ import os
 import string
 from typing import Optional
 import mysql
-from backend.utils.vconnection import VConnection, VCursor
+from utils.vconnection import VConnection, VCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import flash, abort, g
 

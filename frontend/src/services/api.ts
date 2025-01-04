@@ -13,6 +13,7 @@ export interface Game {
 
 export interface ChatResponse {
   response: string;
+  audio?: string;
 }
 
 export interface User {
@@ -29,7 +30,9 @@ const api = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
+    'Connection': 'keep-alive'
   },
+  withCredentials: true
 });
 
 export const apiService = {
@@ -67,8 +70,16 @@ export const apiService = {
     return response.data;
   },
 
-  async sendChatMessage(message: string, context: string = 'general'): Promise<ChatResponse> {
-    const response = await api.post<ChatResponse>('/chat', { message, context });
+  async sendChatMessage(
+    message: string, 
+    context: string = 'general', 
+    withVoice: boolean = false
+  ): Promise<ChatResponse> {
+    const response = await api.post<ChatResponse>('/chat', { 
+      message, 
+      context,
+      voice: withVoice 
+    });
     return response.data;
   },
 }; 

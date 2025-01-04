@@ -1,5 +1,5 @@
 import mysql
-from backend.utils.vconnection import VConnection, VCursor
+from utils.vconnection import VConnection, VCursor
 
 
 class GameDB:

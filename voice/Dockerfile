@@ -25,7 +25,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -o main .
+RUN CGO_ENABLED=1 go build -o main .
 
 # Expose port 8081
 EXPOSE 8081

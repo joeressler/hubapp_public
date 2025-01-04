@@ -64,9 +64,9 @@ services:
       context: ./voice
       dockerfile: Dockerfile
     volumes:
-      - ./voice:/app
-      - voice_audio:/app/audio
-    command: ["go", "run", "main.go"]
+      - ./voice:/app/voice
+      - voice_audio:/app/voice/audio
+    command: ["go", "run", "/app/voice/main.go"]
     networks:
       - app-network
     ports:

@@ -72,23 +72,36 @@ const Chat: React.FC = () => {
       wsRef.current = new WebSocket(wsUrl);
       
       wsRef.current.onopen = () => {
-        console.log('WebSocket connected');
         setError(null);
       };
       
-      wsRef.current.onmessage = (event) => {
+      wsRef.current.onmessage = async (event) => {
         try {
-          console.log('Received WebSocket message:', event.data); // Debug log
+          console.log('Received WebSocket message:', event.data);
           const data = JSON.parse(event.data);
           if (data.error) {
             console.error('WebSocket error:', data.error);
             setError(data.error);
           } else if (data.text) {
-            console.log('Setting transcribed text:', data.text); // Debug log
+            console.log('Setting transcribed text:', data.text);
             setMessage(data.text);
             setError(null);
+            
+            // Automatically submit the transcribed text
+            setLoading(true);
+            try {
+              const result = await apiService.sendChatMessage(data.text, context, true);
+              setResponse(result.response);
+              if (result.audio) {
+                await playResponse(result.audio);
+              }
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Failed to send message');
+            } finally {
+              setLoading(false);
+            }
           } else {
-            console.warn('Received unexpected message format:', data); // Debug log
+            console.warn('Received unexpected message format:', data);
           }
         } catch (e) {
           console.error('Error parsing WebSocket message:', e, 'Raw message:', event.data);
@@ -102,7 +115,6 @@ const Chat: React.FC = () => {
       };
 
       wsRef.current.onclose = () => {
-        console.log('WebSocket connection closed. Attempting to reconnect...');
         reconnectTimeout = setTimeout(connectWebSocket, 3000);
       };
     };
@@ -130,8 +142,25 @@ const Chat: React.FC = () => {
   };
 
   const playResponse = async (audioData: string) => {
-    const audio = new Audio(`data:audio/mp3;base64,${audioData}`);
     try {
+      // Create a Blob from the base64 audio data
+      const byteCharacters = atob(audioData);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'audio/mp3' });
+
+      // Create an object URL from the blob
+      const audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+
+      // Clean up the object URL after playback
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+      };
+
       await audio.play();
     } catch (err) {
       console.error('Error playing audio:', err);

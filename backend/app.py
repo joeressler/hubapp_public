@@ -144,27 +144,44 @@ def chat():
     data = request.json
     question = data.get('message')
     context = data.get('context', 'general')
-    user_id = session['user_id']
+    user_id = session.get('user_id')
     voice_response = data.get('voice', False)
+
+    # Check if user is logged in
+    if user_id is None:
+        return jsonify({'error': 'Authentication required'}), 401
 
     try:
         base_path = "/app/backend/utils/vector_db/storage"
         response = ChatBot.get_response(question, context, base_path=base_path)
-        ChatBot.log(context, question, str(response), user_id)
+        
+        # Only log if we have a valid user_id
+        if user_id:
+            ChatBot.log(context, question, str(response), user_id)
         
         if voice_response:
             TTS_URL = "http://voice:8081/tts"
             text_to_speak = str(response)
-            print(f"Sending to TTS: {text_to_speak}")  # Add debug logging
+            print(f"Sending to TTS: {text_to_speak}")
             tts_response = requests.post(TTS_URL, json={'text': text_to_speak})
-            audio_data = tts_response.content
+            
+            if tts_response.status_code != 200:
+                print(f"TTS error: {tts_response.text}")
+                return jsonify({'error': 'TTS service error'}), 500
+                
+            # Get the base64 audio from the response
+            audio_data = tts_response.json().get('audio')
+            if not audio_data:
+                return jsonify({'error': 'No audio data received from TTS service'}), 500
+                
             return jsonify({
                 'response': text_to_speak,
-                'audio': base64.b64encode(audio_data).decode('utf-8')
+                'audio': audio_data
             })
             
         return jsonify({'response': str(response)})
     except Exception as e:
+        print(f"Chat error: {str(e)}")  # Add error logging
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/games/<int:game_id>/rate', methods=['POST'])

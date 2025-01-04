@@ -188,11 +188,9 @@ func main() {
 			return
 		}
 
-		// Log the text received for TTS
 		fmt.Println("TTS received text:", data.Text)
 
-		// Generate a unique file name using a timestamp
-		fileName := fmt.Sprintf("response_%d.mp3", time.Now().UnixNano())
+		fileName := fmt.Sprintf("response_%d", time.Now().UnixNano())
 		speech := htgotts.Speech{Folder: "audio", Language: "en"}
 		filePath, err := speech.CreateSpeechFile(data.Text, fileName)
 		if err != nil {
@@ -201,10 +199,21 @@ func main() {
 			return
 		}
 
-		// Log the successful creation of the speech file
 		fmt.Printf("Created speech file at: %s\n", filePath)
 
-		c.File(filePath)
+		// Read the file and convert to base64
+		audioData, err := os.ReadFile(filePath)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to read audio file"})
+			return
+		}
+
+		// Convert to base64 and send as JSON
+		base64Audio := base64.StdEncoding.EncodeToString(audioData)
+		c.JSON(200, gin.H{"audio": base64Audio})
+
+		// Clean up the file
+		os.Remove(filePath)
 	})
 
 	// Start the server

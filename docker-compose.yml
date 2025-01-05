@@ -23,10 +23,10 @@ services:
       - "3000:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
+      interval: 1m
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 1m
     deploy:
       resources:
         limits:
@@ -100,10 +100,10 @@ services:
       - backend
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
-      interval: 30s
+      interval: 1m
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 1m
     deploy:
       resources:
         limits:

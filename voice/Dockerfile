@@ -10,7 +10,8 @@ RUN apk add --no-cache \
     alsa-lib-dev \
     alsa-utils \
     wget \
-    unzip
+    unzip \
+    curl
 
 # Create audio directory
 RUN mkdir -p /app/audio && chmod 777 /app/audio

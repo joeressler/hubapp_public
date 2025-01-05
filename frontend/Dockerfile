@@ -1,4 +1,5 @@
-FROM node:18-alpine
+FROM node:18-alpine as build
+
 WORKDIR /app
 
 # Add node user and set permissions
@@ -11,19 +12,18 @@ USER nodeuser
 
 # Copy package files
 COPY --chown=nodeuser:nodegroup package*.json ./
-RUN npm ci && \
-    npm install @babel/plugin-proposal-private-property-in-object --save-dev && \
-    npm cache clean --force
+RUN npm ci
 
-# Copy source code
+# Copy source code and build
 COPY --chown=nodeuser:nodegroup . .
+RUN npm run build
 
-# Add environment variables for development
-ENV NODE_ENV=production \
-    WDS_SOCKET_PORT=0 \
-    WATCHPACK_POLLING=true \
-    CHOKIDAR_USEPOLLING=true
+# Serve the app
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=build /app/build /app/build
+RUN npm install -g serve
+RUN apk add --no-cache curl
+CMD ["serve", "-s", "build"]
 
-# Expose development port
 EXPOSE 3000
-CMD ["npm", "start"]

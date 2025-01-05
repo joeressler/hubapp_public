@@ -12,6 +12,7 @@ services:
       - HOST=0.0.0.0
       - WDS_SOCKET_PORT=0
       - DANGEROUSLY_DISABLE_HOST_CHECK=true
+      - CHOKIDAR_USEPOLLING=true
     user: "1001:1001"
     networks:
       - app-network

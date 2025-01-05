@@ -35,12 +35,7 @@ CORS(app,
      supports_credentials=True,
      resources={
          r"/api/*": {
-             "origins": [
-                 "http://localhost:3000", 
-                 "http://frontend:3000",
-                 f"http://{os.environ.get('EC2_PUBLIC_DNS', '*')}:3000",  # Add EC2 DNS
-                 f"http://{os.environ.get('EC2_PUBLIC_IP', '*')}:3000"    # Add EC2 IP
-             ],
+             "origins": ["http://localhost:3000", "http://frontend:3000"],
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization"],
              "expose_headers": ["Content-Range", "X-Content-Range"],

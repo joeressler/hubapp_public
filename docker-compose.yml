@@ -17,6 +17,19 @@ services:
         condition: service_started
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: unless-stopped
+    stop_grace_period: 1m
+    oom_kill_disable: false
 
   backend:
     build:
@@ -48,9 +61,17 @@ services:
       - "8080:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    restart: unless-stopped
+    stop_grace_period: 1m
+    oom_kill_disable: false
 
   voice:
     build:
@@ -69,6 +90,19 @@ services:
       - GIN_MODE=release
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    restart: unless-stopped
+    stop_grace_period: 1m
+    oom_kill_disable: false
 
 networks:
   app-network:

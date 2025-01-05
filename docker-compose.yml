@@ -26,7 +26,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 384M
+        reservations:
+          memory: 256M
     restart: unless-stopped
     stop_grace_period: 1m
     oom_kill_disable: false
@@ -68,7 +70,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 512M
+        reservations:
+          memory: 384M
     restart: unless-stopped
     stop_grace_period: 1m
     oom_kill_disable: false
@@ -99,7 +103,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 256M
+        reservations:
+          memory: 128M
     restart: unless-stopped
     stop_grace_period: 1m
     oom_kill_disable: false

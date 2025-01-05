@@ -91,7 +91,7 @@ func main() {
 	r.Use(corsMiddleware())
 
 	// Health check endpoint
-	r.GET("/voice/health", func(c *gin.Context) {
+	r.GET("/api/voice/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
 	})
 

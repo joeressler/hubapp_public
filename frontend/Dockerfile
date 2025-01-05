@@ -6,19 +6,20 @@ WORKDIR /app
 RUN addgroup -g 1001 nodegroup && \
     adduser -D -u 1001 -G nodegroup nodeuser
 
-# Copy package files first
-COPY --chown=nodeuser:nodegroup package*.json ./
-
-# Set correct permissions for node_modules
+# Create and set permissions for node_modules
 RUN mkdir -p /app/node_modules && \
     chown -R nodeuser:nodegroup /app
 
+# Switch to nodeuser
 USER nodeuser
+
+# Copy package files with correct ownership
+COPY --chown=nodeuser:nodegroup package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application code with correct ownership
+# Copy the rest of the application code
 COPY --chown=nodeuser:nodegroup . .
 
 # Build the application

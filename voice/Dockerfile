@@ -32,4 +32,4 @@ RUN CGO_ENABLED=1 go build -o main .
 EXPOSE 8081
 
 # Run the application
-CMD ["./main"] 
+CMD ["go", "run", "./main"] 

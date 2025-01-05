@@ -10,12 +10,16 @@ RUN addgroup -g 1001 nodegroup && \
 
 USER nodeuser
 
-# Copy package files
-COPY --chown=nodeuser:nodegroup package*.json ./
-RUN npm ci
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json ./
 
-# Copy source code and build
-COPY --chown=nodeuser:nodegroup . .
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the application
 RUN npm run build
 
 # Serve the app

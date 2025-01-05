@@ -3,11 +3,13 @@ FROM python:3.11-slim-bullseye as builder
 
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies including MySQL development packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
     pkg-config \
+    default-libmysqlclient-dev \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install requirements in chunks to better handle memory
@@ -23,6 +25,7 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
+    default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed packages from builder

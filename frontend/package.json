@@ -34,7 +34,7 @@
       "eslint-plugin-react-hooks": "^4.0.0"
     },
     "scripts": {
-      "start": "HOST=ec2-98-80-74-37.compute-1.amazonaws.com react-scripts start",
+      "start": "HOST=0.0.0.0 react-scripts start",
       "build": "react-scripts build",
       "test": "react-scripts test",
       "eject": "react-scripts eject"

@@ -18,12 +18,11 @@ RUN npm ci && \
 # Copy source code
 COPY --chown=nodeuser:nodegroup . .
 
-# Add environment variables for development
-ENV NODE_ENV=production \
-    WDS_SOCKET_PORT=0 \
-    WATCHPACK_POLLING=true \
-    CHOKIDAR_USEPOLLING=true
+# Set environment variables
+ENV NODE_ENV=production
 
-# Expose development port
+# Expose port
 EXPOSE 3000
+
+# Start the application
 CMD ["npm", "start"]

@@ -91,12 +91,15 @@ const Chat: React.FC = () => {
                     // Automatically submit the transcribed text
                     setLoading(true);
                     try {
+                        console.log('Sending chat message:', data.text);
                         const result = await apiService.sendChatMessage(data.text, context, true);
+                        console.log('Received chat response:', result);
                         setResponse(result.response);
                         if (result.audio) {
                             await playResponse(result.audio);
                         }
                     } catch (err) {
+                        console.error('Error sending chat message:', err);
                         setError(err instanceof Error ? err.message : 'Failed to send message');
                     } finally {
                         setLoading(false);

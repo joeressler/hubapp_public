@@ -153,21 +153,26 @@ def get_games():
 def chat():
     data = request.json
     question = data.get('message')
-    context = data.get('context', 'general')
+    context = data.get('context', 'wows')
     user_id = session.get('user_id')
     voice_response = data.get('voice', False)
 
+    print(f"Received chat request: question='{question}', context='{context}', user_id='{user_id}', voice_response='{voice_response}'")
+
     # Check if user is logged in
     if user_id is None:
+        print("User not authenticated")
         return jsonify({'error': 'Authentication required'}), 401
 
     try:
         base_path = "/app/backend/utils/vector_db/storage"
         response = ChatBot.get_response(question, context, base_path=base_path)
+        print(f"ChatBot response: {response}")
         
         # Only log if we have a valid user_id
         if user_id:
             ChatBot.log(context, question, str(response), user_id)
+            print(f"Logged chat interaction for user_id='{user_id}'")
         
         if voice_response:
             TTS_URL = "http://voice:8081/tts"
@@ -182,13 +187,16 @@ def chat():
             # Get the base64 audio from the response
             audio_data = tts_response.json().get('audio')
             if not audio_data:
+                print("No audio data received from TTS service")
                 return jsonify({'error': 'No audio data received from TTS service'}), 500
                 
+            print("Returning response with audio data")
             return jsonify({
                 'response': text_to_speak,
                 'audio': audio_data
             })
             
+        print("Returning text response")
         return jsonify({'response': str(response)})
     except Exception as e:
         print(f"Chat error: {str(e)}")  # Add error logging

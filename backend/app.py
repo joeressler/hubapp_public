@@ -34,8 +34,13 @@ app.config['PASSWORD_PIN'] = os.environ.get('PASSWORD_PIN')
 CORS(app, 
      supports_credentials=True,
      resources={
-         r"/api/*": {
-             "origins": ["http://localhost:3000", "http://frontend:3000"],
+         r"/*": {
+             "origins": [
+                 "http://localhost:3000",
+                 "http://frontend:3000",
+                 "https://www.josepharessler.com",
+                 "wss://www.josepharessler.com"
+             ],
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization"],
              "expose_headers": ["Content-Range", "X-Content-Range"],
@@ -44,7 +49,12 @@ CORS(app,
      })
 
 # Initialize SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, 
+                   cors_allowed_origins="*",
+                   path='/ws',
+                   async_mode='eventlet',
+                   ping_timeout=30,
+                   ping_interval=15)
 
 def login_required(f):
     @wraps(f)

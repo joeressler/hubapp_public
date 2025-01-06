@@ -54,10 +54,11 @@ const Chat: React.FC = () => {
 
   // Update the WebSocket connection URL to be environment-aware and include context
   const getWsUrl = (context: string) => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const baseUrl = process.env.NODE_ENV === 'production' 
-      ? `wss://${window.location.host}`
-      : 'ws://localhost:8081';
-    return `${baseUrl}/ws/${context}`;
+      ? `${window.location.host}`
+      : 'localhost:8081';
+    return `${protocol}//${baseUrl}/ws/${context}`;
   };
 
   useEffect(() => {

@@ -49,7 +49,7 @@ services:
       - ./backend/utils/vector_db/storage:/app/backend/utils/vector_db/storage
     env_file:
       - .env
-    command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080"]
+    command: ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:app"]
     networks:
       - app-network
     ports:
@@ -79,7 +79,7 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/voice/health"]
       interval: 30s
       timeout: 10s
       retries: 3

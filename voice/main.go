@@ -166,6 +166,7 @@ func main() {
 				body,
 			)
 			if err != nil {
+				fmt.Println("Error forwarding to backend:", err)
 				conn.WriteJSON(map[string]string{"error": "Failed to reach backend"})
 				continue
 			}
@@ -176,6 +177,7 @@ func main() {
 				Error string `json:"error"`
 			}
 			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+				fmt.Println("Error parsing backend response:", err)
 				conn.WriteJSON(map[string]string{"error": "Failed to parse backend response"})
 				resp.Body.Close()
 				continue

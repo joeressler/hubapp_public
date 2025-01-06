@@ -9,7 +9,7 @@ services:
       - frontend_node_modules:/app/node_modules
     environment:
       - NODE_ENV=production
-      - HOST=0.0.0.0
+      - HOST=ec2-98-80-74-37.compute-1.amazonaws.com
     user: "1001:1001"
     networks:
       - app-network

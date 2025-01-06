@@ -32,9 +32,12 @@ var upgrader = websocket.Upgrader{
 
 		// Add your production domain here
 		allowedOrigins := []string{
+			"https://www.josepharessler.com",
+			"http://www.josepharessler.com",
+			"http://ec2-98-80-74-37.compute-1.amazonaws.com",
+			"http://172.31.18.233",
 			"http://localhost:3000",
 			"http://localhost:8080",
-			// Add your production domains here
 		}
 
 		for _, allowed := range allowedOrigins {

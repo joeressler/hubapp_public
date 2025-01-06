@@ -10,8 +10,7 @@ RUN apk add --no-cache \
     alsa-lib-dev \
     alsa-utils \
     wget \
-    unzip \
-    curl
+    unzip
 
 # Create audio directory
 RUN mkdir -p /app/audio && chmod 777 /app/audio
@@ -32,4 +31,4 @@ RUN CGO_ENABLED=1 go build -o main .
 EXPOSE 8081
 
 # Run the application
-CMD ["go", "run", "./main"] 
+CMD ["./main"] 

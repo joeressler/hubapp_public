@@ -90,11 +90,6 @@ func main() {
 	// Use CORS middleware
 	r.Use(corsMiddleware())
 
-	// Health check endpoint
-	r.GET("/api/voice/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
-	})
-
 	// WebSocket endpoint
 	r.GET("/ws/:context", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)

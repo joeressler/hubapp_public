@@ -1,44 +1,40 @@
-# Use multi-stage build to reduce final image size
-FROM python:3.11-slim-bullseye as builder
-
+FROM python:3.11-slim-bullseye
 WORKDIR /app
 
-# Install build dependencies including MySQL development packages
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    curl \
-    pkg-config \
-    default-libmysqlclient-dev \
-    build-essential \
+        curl \
+        pkg-config \
+        default-libmysqlclient-dev \
+        build-essential \
+        python3-dev \
+        wget \
+        unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install requirements in chunks to better handle memory
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Final stage
-FROM python:3.11-slim-bullseye
-
-WORKDIR /app
-
-# Install runtime dependencies only
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl \
-    default-libmysqlclient-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
+# Download Vosk model
+RUN mkdir -p models && \
+    cd models && \
+    wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip && \
+    unzip vosk-model-small-en-us-0.15.zip && \
+    rm vosk-model-small-en-us-0.15.zip
 
 # Copy application code
 COPY . .
 
-# Set environment variables
-ENV PYTHONPATH=/app/backend
-ENV FLASK_APP=app.py
+ENV FLASK_APP=app.py \
+    PYTHONPATH=/app/backend \
+    FLASK_ENV=production \
+    PYTHONUNBUFFERED=1
 
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/api/health || exit 1
 
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080"] 
+
+CMD ["flask", "run", "--host", "0.0.0.0", "--port", "8080"] 

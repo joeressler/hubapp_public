@@ -50,16 +50,7 @@ pipeline {
                     bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-88-156-217.compute-1.amazonaws.com 'docker load -i flask-container.tar'"
                     bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-88-156-217.compute-1.amazonaws.com 'docker-compose down --remove-orphans'"
                     bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-88-156-217.compute-1.amazonaws.com 'docker system prune -f'"
-                    bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-88-156-217.compute-1.amazonaws.com 'docker container prune -f'"
-                    bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-88-156-217.compute-1.amazonaws.com 'docker volume prune -f'"
-                    bat """
-                        ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-88-156-217.compute-1.amazonaws.com '
-                            docker-compose down --remove-orphans && \
-                            docker system prune -f && \
-                            docker container prune -f && \
-                            docker volume prune -f && \
-                            COMPOSE_HTTP_TIMEOUT=200 docker-compose up -d --force-recreate'
-                        """
+                    bat "ssh -i ${EC2_KEY_PATH} -vvv -o StrictHostKeyChecking=no ec2-user@ec2-3-88-156-217.compute-1.amazonaws.com 'COMPOSE_HTTP_TIMEOUT=200 docker-compose up -d --force-recreate'"
                 }
             }
         }

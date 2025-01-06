@@ -3,16 +3,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    command: ["sh", "-c", "HOST=0.0.0.0 npm start"]
+    command: npm start
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend:/app/frontend
+      - frontend_node_modules:/app/node_modules
     environment:
       - NODE_ENV=production
-      - HOST=0.0.0.0
-      - WDS_SOCKET_PORT=0
-      - DANGEROUSLY_DISABLE_HOST_CHECK=true
-      - CHOKIDAR_USEPOLLING=true
     user: "1001:1001"
     networks:
       - app-network
@@ -23,19 +19,14 @@ services:
       - "3000:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 1m
+      interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 1m
+      retries: 3
+      start_period: 40s
     deploy:
       resources:
         limits:
-          memory: 384M
-        reservations:
-          memory: 256M
-    restart: unless-stopped
-    stop_grace_period: 1m
-    oom_kill_disable: false
+          memory: 2G
 
   backend:
     build:
@@ -74,12 +65,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-        reservations:
-          memory: 384M
-    restart: unless-stopped
-    stop_grace_period: 1m
-    oom_kill_disable: false
+          memory: 2G
 
   voice:
     build:
@@ -99,20 +85,15 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/api/voice/health"]
-      interval: 1m
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 1m
+      retries: 3
+      start_period: 40s
     deploy:
       resources:
         limits:
-          memory: 256M
-        reservations:
-          memory: 128M
-    restart: unless-stopped
-    stop_grace_period: 1m
-    oom_kill_disable: false
+          memory: 1G
 
 networks:
   app-network:

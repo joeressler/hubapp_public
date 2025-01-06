@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-alpine as build
 WORKDIR /app
 
 # Add node user and set permissions
@@ -9,20 +9,18 @@ RUN addgroup -g 1001 nodegroup && \
 
 USER nodeuser
 
-# Copy package files
+# Copy package files and install dependencies
 COPY --chown=nodeuser:nodegroup package*.json ./
-RUN npm ci && \
-    npm install @babel/plugin-proposal-private-property-in-object --save-dev && \
-    npm cache clean --force
+RUN npm ci && npm cache clean --force
 
-# Copy source code
+# Copy source code and build the app
 COPY --chown=nodeuser:nodegroup . .
+RUN npm run build
 
-# Set environment variables
-ENV NODE_ENV=production
-
-# Expose port
+# Use a lightweight server to serve the static files
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=build /app/build /app/build
+RUN npm install -g serve
 EXPOSE 3000
-
-# Start the application
-CMD ["npm", "start"]
+CMD ["serve", "-s", "build"]

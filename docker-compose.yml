@@ -9,6 +9,7 @@ services:
       - frontend_node_modules:/app/node_modules
     environment:
       - NODE_ENV=production
+      - HOST=0.0.0.0
     user: "1001:1001"
     networks:
       - app-network

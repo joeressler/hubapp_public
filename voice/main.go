@@ -32,6 +32,9 @@ var upgrader = websocket.Upgrader{
 
 		// Add your production domain here
 		allowedOrigins := []string{
+			"wss://www.josepharessler.com",
+			"ws://www.josepharessler.com",
+			"www.josepharessler.com",
 			"https://www.josepharessler.com",
 			"http://www.josepharessler.com",
 			"http://ec2-98-80-74-37.compute-1.amazonaws.com",

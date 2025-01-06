@@ -21,22 +21,14 @@ import (
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		if origin == "" {
-			return true // Allow requests with no origin
-		}
-
-		// Allow localhost origins in development
-		if strings.HasPrefix(origin, "http://localhost:") {
-			return true
-		}
+		fmt.Println("Origin:", origin)
 
 		// Add your production domain here
 		allowedOrigins := []string{
-			"wss://www.josepharessler.com",
-			"ws://www.josepharessler.com",
-			"www.josepharessler.com",
-			"https://www.josepharessler.com",
-			"http://www.josepharessler.com",
+			"ws://josepharessler.com",
+			"wss://josepharessler.com",
+			"https://josepharessler.com",
+			"http://josepharessler.com",
 			"http://ec2-98-80-74-37.compute-1.amazonaws.com",
 			"http://172.31.18.233",
 			"http://localhost:3000",

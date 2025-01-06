@@ -3,7 +3,6 @@
 **/*.pyo
 **/*.pyd
 .Python
-env/
 .git
 .gitignore
 .pytest_cache/

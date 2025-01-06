@@ -21,6 +21,7 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build /app/build /app/build
+COPY --from=build /app/package.json /app/package.json
 RUN npm install -g serve
 EXPOSE 3000
 CMD ["serve", "-s", "build"]

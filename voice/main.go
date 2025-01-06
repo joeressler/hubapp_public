@@ -99,18 +99,25 @@ func main() {
 
 	// WebSocket endpoint
 	r.GET("/ws/:context", func(c *gin.Context) {
+		fmt.Println("Attempting to upgrade to WebSocket")
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
+			fmt.Println("WebSocket upgrade error:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		defer conn.Close()
+		defer func() {
+			fmt.Println("Closing WebSocket connection")
+			conn.Close()
+		}()
 
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
+				fmt.Println("Error reading WebSocket message:", err)
 				return
 			}
+			fmt.Println("Received WebSocket message:", string(message))
 
 			// Parse the incoming JSON message
 			var audioMessage struct {
@@ -119,9 +126,11 @@ func main() {
 				SampleRate int    `json:"sampleRate"`
 			}
 			if err := json.Unmarshal(message, &audioMessage); err != nil {
+				fmt.Println("Error unmarshalling message:", err)
 				conn.WriteJSON(map[string]string{"error": "Invalid message format"})
 				continue
 			}
+			fmt.Println("Parsed audio message:", audioMessage)
 
 			// Create multipart form with audio data and context
 			body := &bytes.Buffer{}
@@ -131,9 +140,11 @@ func main() {
 			part, _ := writer.CreateFormFile("audio", "audio.wav")
 			audioData, err := base64.StdEncoding.DecodeString(strings.Split(audioMessage.Audio, ",")[1])
 			if err != nil {
+				fmt.Println("Error decoding audio data:", err)
 				conn.WriteJSON(map[string]string{"error": "Invalid audio data"})
 				continue
 			}
+			fmt.Println("Decoded audio data size:", len(audioData))
 
 			// Log audio data size for debugging
 			fmt.Printf("Audio data size before WAV header: %d bytes\n", len(audioData))

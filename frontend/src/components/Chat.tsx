@@ -62,68 +62,75 @@ const Chat: React.FC = () => {
     let reconnectTimeout: NodeJS.Timeout;
 
     const connectWebSocket = () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-
-      const wsUrl = getWsUrl(context);
-      wsRef.current = new WebSocket(wsUrl);
-      
-      wsRef.current.onopen = () => {
-        setError(null);
-      };
-      
-      wsRef.current.onmessage = async (event) => {
-        try {
-          console.log('Received WebSocket message:', event.data);
-          const data = JSON.parse(event.data);
-          if (data.error) {
-            console.error('WebSocket error:', data.error);
-            setError(data.error);
-          } else if (data.text) {
-            console.log('Setting transcribed text:', data.text);
-            setMessage(data.text);
-            setError(null);
-            
-            // Automatically submit the transcribed text
-            setLoading(true);
-            try {
-              const result = await apiService.sendChatMessage(data.text, context, true);
-              setResponse(result.response);
-              if (result.audio) {
-                await playResponse(result.audio);
-              }
-            } catch (err) {
-              setError(err instanceof Error ? err.message : 'Failed to send message');
-            } finally {
-              setLoading(false);
-            }
-          } else {
-            console.warn('Received unexpected message format:', data);
-          }
-        } catch (e) {
-          console.error('Error parsing WebSocket message:', e, 'Raw message:', event.data);
-          setError('Failed to process server response');
+        if (wsRef.current) {
+            console.log('Closing existing WebSocket connection');
+            wsRef.current.close();
         }
-      };
 
-      wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setError('Failed to connect to voice service');
-      };
+        const wsUrl = getWsUrl(context);
+        console.log('Connecting to WebSocket:', wsUrl);
+        wsRef.current = new WebSocket(wsUrl);
 
-      wsRef.current.onclose = () => {
-        reconnectTimeout = setTimeout(connectWebSocket, 3000);
-      };
+        wsRef.current.onopen = () => {
+            console.log('WebSocket connection opened');
+            setError(null);
+        };
+
+        wsRef.current.onmessage = async (event) => {
+            console.log('Received WebSocket message:', event.data);
+            try {
+                const data = JSON.parse(event.data);
+                if (data.error) {
+                    console.error('WebSocket error:', data.error);
+                    setError(data.error);
+                } else if (data.text) {
+                    console.log('Setting transcribed text:', data.text);
+                    setMessage(data.text);
+                    setError(null);
+
+                    // Automatically submit the transcribed text
+                    setLoading(true);
+                    try {
+                        const result = await apiService.sendChatMessage(data.text, context, true);
+                        setResponse(result.response);
+                        if (result.audio) {
+                            await playResponse(result.audio);
+                        }
+                    } catch (err) {
+                        setError(err instanceof Error ? err.message : 'Failed to send message');
+                    } finally {
+                        setLoading(false);
+                    }
+                } else {
+                    console.warn('Received unexpected message format:', data);
+                }
+            } catch (e) {
+                console.error('Error parsing WebSocket message:', e, 'Raw message:', event.data);
+                setError('Failed to process server response');
+            }
+        };
+
+        wsRef.current.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            setError('Failed to connect to voice service');
+        };
+
+        wsRef.current.onclose = () => {
+            console.log('WebSocket connection closed, attempting to reconnect');
+            reconnectTimeout = setTimeout(connectWebSocket, 3000);
+        };
     };
 
     connectWebSocket();
 
     return () => {
-      clearTimeout(reconnectTimeout);
-      wsRef.current?.close();
+        clearTimeout(reconnectTimeout);
+        if (wsRef.current) {
+            console.log('Cleaning up WebSocket connection');
+            wsRef.current.close();
+        }
     };
-  }, [context]); // Add context as a dependency
+}, [context]); // Add context as a dependency
 
   const handleContextChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newContext = e.target.value as ChatContext;

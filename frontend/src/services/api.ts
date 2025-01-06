@@ -75,7 +75,7 @@ export const apiService = {
     context: string = 'general', 
     withVoice: boolean = false
   ): Promise<ChatResponse> {
-    const response = await api.post<ChatResponse>('/api/chat', { 
+    const response = await api.post<ChatResponse>('/chat', { 
       message, 
       context,
       voice: withVoice 

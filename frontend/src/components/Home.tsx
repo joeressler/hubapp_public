@@ -297,7 +297,7 @@ const Home: React.FC = () => {
                   textShadow: '0 0 10px rgba(56, 189, 248, 0.3)'
                 }}
               >
-                Full Stack Developer & Game Programming Enthusiast
+                Full Stack Developer & Programming Enthusiast
               </Typography>
             </motion.div>
 
@@ -421,6 +421,57 @@ const Home: React.FC = () => {
                 />
               </Grid>
             </Grid>
+          </Box>
+
+          {/* Steam Wishlist Section */}
+          <Box sx={{ py: { xs: 8, md: 12 }, textAlign: 'center' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <Typography
+                variant="h3"
+                align="center"
+                className="gradient-text neon-text"
+                sx={{
+                  mb: { xs: 6, md: 8 },
+                  fontWeight: 700,
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase'
+                }}
+              >
+                Wishlist Zenatria, now on Steam!
+              </Typography>
+            </motion.div>
+
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: 'rgba(10, 15, 28, 0.7)',
+                borderRadius: '16px',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
+                boxShadow: '0 4px 30px rgba(14, 165, 233, 0.1)',
+                padding: '1rem',
+                maxWidth: '700px',
+                margin: '0 auto'
+              }}
+            >
+              <iframe
+                src="https://store.steampowered.com/widget/2928010/"
+                frameBorder="0"
+                width="646"
+                height="190"
+                style={{
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: 'none'
+                }}
+              ></iframe>
+            </Box>
           </Box>
         </Container>
       </Box>

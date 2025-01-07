@@ -35,6 +35,13 @@ const api = axios.create({
   withCredentials: true
 });
 
+const voiceApi = axios.create({
+  baseURL: '/voice',
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+});
+
 export const apiService = {
   async login(username: string, password: string): Promise<LoginResponse> {
     const response = await api.post<LoginResponse>('/auth/login', { username, password });
@@ -83,17 +90,9 @@ export const apiService = {
     return response.data;
   },
 
-  async transcribeAudio(formData: FormData): Promise<{ text: string }> {
-    const response = await api.post<{ text: string }>('/voice/transcribe', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  },
 
   async sendAudioToVoiceService(formData: FormData): Promise<{ text: string }> {
-    const response = await api.post<{ text: string }>('/voice/convert-and-transcribe', formData, {
+    const response = await voiceApi.post<{ text: string }>('/convert-and-transcribe', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

@@ -97,7 +97,7 @@ func main() {
 	})
 
 	// Add a new endpoint to handle the conversion and forwarding of audio data
-	r.POST("/api/voice/convert-and-transcribe", func(c *gin.Context) {
+	r.POST("/voice/convert-and-transcribe", func(c *gin.Context) {
 		fmt.Println("Received request to convert and transcribe audio")
 
 		file, err := c.FormFile("audio")

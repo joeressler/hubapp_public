@@ -98,8 +98,11 @@ func main() {
 
 	// Add a new endpoint to handle the conversion and forwarding of audio data
 	r.POST("/api/voice/convert-and-transcribe", func(c *gin.Context) {
+		fmt.Println("Received request to convert and transcribe audio")
+
 		file, err := c.FormFile("audio")
 		if err != nil {
+			fmt.Println("Error receiving audio file:", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "No audio file received"})
 			return
 		}
@@ -108,6 +111,7 @@ func main() {
 		tempOggPath := "/tmp/audio.ogg"
 		tempWavPath := "/tmp/audio.wav"
 		if err := c.SaveUploadedFile(file, tempOggPath); err != nil {
+			fmt.Println("Error saving audio file:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save audio file"})
 			return
 		}
@@ -115,6 +119,7 @@ func main() {
 		// Convert Ogg to WAV using ffmpeg
 		cmd := exec.Command("ffmpeg", "-i", tempOggPath, tempWavPath)
 		if err := cmd.Run(); err != nil {
+			fmt.Println("Error converting audio format:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to convert audio format"})
 			return
 		}
@@ -122,6 +127,7 @@ func main() {
 		// Read the converted WAV file
 		wavData, err := os.ReadFile(tempWavPath)
 		if err != nil {
+			fmt.Println("Error reading converted audio file:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read converted audio file"})
 			return
 		}
@@ -141,6 +147,7 @@ func main() {
 			body,
 		)
 		if err != nil {
+			fmt.Println("Error sending to backend:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reach backend"})
 			return
 		}
@@ -149,6 +156,7 @@ func main() {
 		// Forward the response from the backend to the client
 		var result map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			fmt.Println("Error parsing backend response:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse backend response"})
 			return
 		}

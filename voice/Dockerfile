@@ -2,7 +2,7 @@ FROM golang:1.23.4-alpine3.19
 
 WORKDIR /app
 
-# Install Vosk dependencies and ffmpeg
+# Install Vosk dependencies and ffmpeg with libmp3lame
 RUN apk add --no-cache \
     gcc \
     musl-dev \
@@ -11,7 +11,8 @@ RUN apk add --no-cache \
     alsa-utils \
     wget \
     unzip \
-    ffmpeg
+    ffmpeg \
+    lame
 
 # Create audio directory
 RUN mkdir -p /app/audio && chmod 777 /app/audio

@@ -48,92 +48,9 @@ const Chat: React.FC = () => {
     audioContext: null,
     processor: null
   });
-  const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Update the WebSocket connection URL to be environment-aware and include context
-  const getWsUrl = (context: string) => {
-    const baseUrl = 'wss://www.josepharessler.com';
-    return `${baseUrl}/ws/${context}`;
-  };
-
-  useEffect(() => {
-    let reconnectTimeout: NodeJS.Timeout;
-
-    const connectWebSocket = () => {
-        if (wsRef.current) {
-            console.log('Closing existing WebSocket connection');
-            wsRef.current.close();
-        }
-
-        const wsUrl = getWsUrl(context);
-        console.log('Connecting to WebSocket:', wsUrl);
-        wsRef.current = new WebSocket(wsUrl);
-
-        wsRef.current.onopen = () => {
-            console.log('WebSocket connection opened');
-            setError(null);
-        };
-
-        wsRef.current.onmessage = async (event) => {
-            console.log('Received WebSocket message:', event.data);
-            try {
-                const data = JSON.parse(event.data);
-                if (data.error) {
-                    console.error('WebSocket error:', data.error);
-                    setError(data.error);
-                } else if (data.text) {
-                    console.log('Setting transcribed text:', data.text);
-                    setMessage(data.text);
-                    setError(null);
-
-                    // Automatically submit the transcribed text
-                    setLoading(true);
-                    try {
-                        console.log('Sending chat message:', data.text);
-                        const result = await apiService.sendChatMessage(data.text, context, true);
-                        console.log('Received chat response:', result);
-                        setResponse(result.response);
-                        if (result.audio) {
-                            await playResponse(result.audio);
-                        }
-                    } catch (err) {
-                        console.error('Error sending chat message:', err);
-                        setError(err instanceof Error ? err.message : 'Failed to send message');
-                    } finally {
-                        setLoading(false);
-                    }
-                } else {
-                    console.warn('Received unexpected message format:', data);
-                }
-            } catch (e) {
-                console.error('Error parsing WebSocket message:', e, 'Raw message:', event.data);
-                setError('Failed to process server response');
-            }
-        };
-
-        wsRef.current.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            setError('Failed to connect to voice service');
-        };
-
-        wsRef.current.onclose = () => {
-            console.log('WebSocket connection closed, attempting to reconnect');
-            reconnectTimeout = setTimeout(connectWebSocket, 3000);
-        };
-    };
-
-    connectWebSocket();
-
-    return () => {
-        clearTimeout(reconnectTimeout);
-        if (wsRef.current) {
-            console.log('Cleaning up WebSocket connection');
-            wsRef.current.close();
-        }
-    };
-}, [context]); // Add context as a dependency
 
   const handleContextChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newContext = e.target.value as ChatContext;
@@ -200,118 +117,125 @@ const Chat: React.FC = () => {
 
   const handleAudioStop = async () => {
     if (audioChunksRef.current.length === 0) {
-        console.log('No audio data recorded');
-        return;
+      console.log('No audio data recorded');
+      setError('No audio data to send');
+      return;
     }
+
+    console.log('Processing recorded audio data');
 
     // Create an audio context to process the audio data
     const audioContext = new AudioContext({
-        sampleRate: 16000
+      sampleRate: 16000,
     });
 
     // Create a blob from the recorded chunks
-    const audioBlob = new Blob(audioChunksRef.current, { 
-        type: 'audio/wav' 
+    const audioBlob = new Blob(audioChunksRef.current, {
+      type: 'audio/wav',
     });
     audioChunksRef.current = []; // Clear the chunks
 
+    console.log('Audio blob created:', audioBlob);
+
     // Convert blob to array buffer
     const arrayBuffer = await audioBlob.arrayBuffer();
-    
+
     // Decode the audio data
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    
+
     // Create a buffer with the correct sample rate and format
     const pcmBuffer = audioContext.createBuffer(1, audioBuffer.length, 16000);
-    
+
     // Copy and convert the audio data
     const inputData = audioBuffer.getChannelData(0);
     const outputData = pcmBuffer.getChannelData(0);
-    
+
     for (let i = 0; i < audioBuffer.length; i++) {
-        outputData[i] = inputData[i];
+      outputData[i] = inputData[i];
     }
-    
+
     // Convert to 16-bit PCM
     const pcmData = new Int16Array(pcmBuffer.length);
     const channelData = pcmBuffer.getChannelData(0);
     for (let i = 0; i < pcmBuffer.length; i++) {
-        pcmData[i] = Math.max(-1, Math.min(1, channelData[i])) * 0x7FFF;
+      pcmData[i] = Math.max(-1, Math.min(1, channelData[i])) * 0x7fff;
     }
+
+    console.log('PCM data prepared:', pcmData);
 
     // Create WAV blob with the processed data
     const wavBlob = new Blob([pcmData.buffer], { type: 'audio/wav' });
 
-    // Convert the WebSocket send to a REST API call
-    if (audioChunksRef.current.length > 0) {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        console.log('Sending audio data of size:', audioBlob.size);
+    console.log('WAV blob created:', wavBlob);
 
-        try {
-          const response = await apiService.transcribeAudio({
-            audio: base64data,
-            context,
-            sampleRate: 16000,
-          });
-          console.log('Received transcription:', response);
-          setMessage(response.text);
-        } catch (error) {
-          console.error('Error transcribing audio:', error);
-          setError('Failed to transcribe audio');
-        }
-      };
-      reader.readAsDataURL(audioBlob);
-    } else {
-      console.error('No audio data to send');
-      setError('No audio data to send');
-    }
+    // Convert the WebSocket send to a REST API call
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64data = reader.result as string;
+      console.log('Sending audio data of size:', wavBlob.size);
+
+      try {
+        const response = await apiService.transcribeAudio({
+          audio: base64data,
+          context,
+          sampleRate: 16000,
+        });
+        console.log('Received transcription:', response);
+        setMessage(response.text);
+      } catch (error) {
+        console.error('Error transcribing audio:', error);
+        setError('Failed to transcribe audio');
+      }
+    };
+    reader.readAsDataURL(wavBlob);
   };
 
   const toggleRecording = async () => {
     if (!voiceState.isRecording) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            audio: {
-                sampleRate: 16000,
-                channelCount: 1,
-                echoCancellation: true,
-                noiseSuppression: true
-            } 
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            sampleRate: 16000,
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
         });
         const mediaRecorder = new MediaRecorder(stream);
 
         mediaRecorder.ondataavailable = (event) => {
-          audioChunksRef.current.push(event.data);
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+            console.log('Audio chunk recorded:', event.data);
+          }
         };
 
         mediaRecorder.onstop = handleAudioStop;
 
         mediaRecorderRef.current = mediaRecorder;
         mediaRecorder.start();
+        console.log('Recording started');
 
         setVoiceState({
           isRecording: true,
           audioStream: stream,
           audioContext: null,
-          processor: null
+          processor: null,
         });
-
       } catch (err) {
         console.error('Recording error:', err);
         setError('Failed to start recording');
       }
     } else {
       mediaRecorderRef.current?.stop();
-      voiceState.audioStream?.getTracks().forEach(track => track.stop());
+      voiceState.audioStream?.getTracks().forEach((track) => track.stop());
       setVoiceState({
         isRecording: false,
         audioStream: null,
         audioContext: null,
-        processor: null
+        processor: null,
       });
+      console.log('Recording stopped');
     }
   };
 

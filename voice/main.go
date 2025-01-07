@@ -14,46 +14,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	htgotts "github.com/hegedustibor/htgo-tts"
 )
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		origin := r.Header.Get("Origin")
-		if origin == "" {
-			return true // Allow requests with no origin
-		}
-
-		// Allow localhost origins in development
-		if strings.HasPrefix(origin, "http://localhost:") {
-			return true
-		}
-
-		// Add your production domain here
-		allowedOrigins := []string{
-			"https://www.josepharessler.com",
-			"https://josepharessler.com",
-			"http://www.josepharessler.com",
-			"http://josepharessler.com",
-			"http://ec2-98-80-74-37.compute-1.amazonaws.com",
-			"http://172.31.18.233",
-			"http://localhost:3000",
-			"http://localhost:8080",
-		}
-
-		for _, allowed := range allowedOrigins {
-			fmt.Println("Allowed:", allowed)
-			if origin == allowed {
-				fmt.Println("Allowed origin:", origin)
-				return true
-			}
-		}
-		return false
-	},
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
 
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -96,107 +58,6 @@ func main() {
 
 	// Use CORS middleware
 	r.Use(corsMiddleware())
-
-	// WebSocket endpoint
-	r.GET("/ws/:context", func(c *gin.Context) {
-		fmt.Println("Attempting to upgrade to WebSocket")
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		if err != nil {
-			fmt.Println("WebSocket upgrade error:", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		defer func() {
-			fmt.Println("Closing WebSocket connection")
-			conn.Close()
-		}()
-
-		for {
-			_, message, err := conn.ReadMessage()
-			if err != nil {
-				fmt.Println("Error reading WebSocket message:", err)
-				return
-			}
-			fmt.Println("Received WebSocket message:", string(message))
-
-			// Parse the incoming JSON message
-			var audioMessage struct {
-				Audio      string `json:"audio"`
-				Context    string `json:"context"`
-				SampleRate int    `json:"sampleRate"`
-			}
-			if err := json.Unmarshal(message, &audioMessage); err != nil {
-				fmt.Println("Error unmarshalling message:", err)
-				conn.WriteJSON(map[string]string{"error": "Invalid message format"})
-				continue
-			}
-			fmt.Println("Parsed audio message:", audioMessage)
-
-			// Create multipart form with audio data and context
-			body := &bytes.Buffer{}
-			writer := multipart.NewWriter(body)
-
-			// Write the base64 audio data
-			part, _ := writer.CreateFormFile("audio", "audio.wav")
-			audioData, err := base64.StdEncoding.DecodeString(strings.Split(audioMessage.Audio, ",")[1])
-			if err != nil {
-				fmt.Println("Error decoding audio data:", err)
-				conn.WriteJSON(map[string]string{"error": "Invalid audio data"})
-				continue
-			}
-			fmt.Println("Decoded audio data size:", len(audioData))
-
-			// Log audio data size for debugging
-			fmt.Printf("Audio data size before WAV header: %d bytes\n", len(audioData))
-
-			// Create a buffer for the WAV file
-			wavBuffer := &bytes.Buffer{}
-			writeWAVHeader(wavBuffer, len(audioData), audioMessage.SampleRate)
-			wavBuffer.Write(audioData)
-
-			// Write the complete WAV file to the form
-			part.Write(wavBuffer.Bytes())
-			writer.WriteField("context", audioMessage.Context)
-			writer.Close()
-
-			// Forward to Flask backend
-			resp, err := http.Post(
-				"http://backend:8080/api/voice/transcribe",
-				writer.FormDataContentType(),
-				body,
-			)
-			if err != nil {
-				fmt.Println("Error forwarding to backend:", err)
-				conn.WriteJSON(map[string]string{"error": "Failed to reach backend"})
-				continue
-			}
-
-			// Read and parse the response
-			var result struct {
-				Text  string `json:"text"`
-				Error string `json:"error"`
-			}
-			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-				fmt.Println("Error parsing backend response:", err)
-				conn.WriteJSON(map[string]string{"error": "Failed to parse backend response"})
-				resp.Body.Close()
-				continue
-			}
-			resp.Body.Close()
-
-			fmt.Printf("Transcription result: %+v\n", result) // Add debug logging
-
-			// Forward the transcription back to the client
-			if result.Error != "" {
-				conn.WriteJSON(map[string]string{"error": result.Error})
-			} else {
-				conn.WriteJSON(map[string]interface{}{
-					"text":    result.Text,
-					"context": audioMessage.Context,
-				})
-			}
-		}
-	})
 
 	// TTS endpoint
 	r.POST("/tts", func(c *gin.Context) {

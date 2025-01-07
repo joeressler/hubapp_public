@@ -14,7 +14,6 @@ from vosk import Model, KaldiRecognizer
 import wave
 import json
 import io
-from flask_socketio import SocketIO, emit
 
 # Load environment variables
 load_dotenv()
@@ -47,14 +46,6 @@ CORS(app,
              "supports_credentials": True
          }
      })
-
-# Initialize SocketIO
-socketio = SocketIO(app, 
-                   cors_allowed_origins="*",
-                   path='/ws',
-                   async_mode='eventlet',
-                   ping_timeout=30,
-                   ping_interval=15)
 
 def login_required(f):
     @wraps(f)
@@ -268,42 +259,6 @@ def debug_static():
         return jsonify({'error': str(e)}), 500
 
 model = Model("models/vosk-model-small-en-us-0.15")
-
-@socketio.on('connect')
-def handle_connect():
-    print('Client connected')
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print('Client disconnected')
-
-@socketio.on('audio')
-def handle_audio(data):
-    try:
-        # Decode base64 audio data
-        audio_data = base64.b64decode(data['audio'].split(',')[1])
-        
-        # Use Vosk to transcribe audio
-        rec = KaldiRecognizer(model, 16000)
-        audio_stream = io.BytesIO(audio_data)
-        wf = wave.open(audio_stream, "rb")
-        
-        text = ""
-        while True:
-            data = wf.readframes(4000)
-            if len(data) == 0:
-                break
-            if rec.AcceptWaveform(data):
-                result = json.loads(rec.Result())
-                text += result.get('text', '') + ' '
-        
-        final_result = json.loads(rec.FinalResult())
-        text += final_result.get('text', '')
-
-        # Send transcription back to client
-        emit('transcription', {'text': text.strip(), 'context': data['context']})
-    except Exception as e:
-        emit('error', {'error': str(e)})
 
 @app.errorhandler(500)
 def internal_error(error):

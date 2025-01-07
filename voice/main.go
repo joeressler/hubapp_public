@@ -84,17 +84,13 @@ func main() {
 
 		// Convert the file to MP3 using ffmpeg
 		mp3FilePath := fmt.Sprintf("audio/%s.mp3", fileName)
-
-		// Check if the input file exists
+		// Check if the file exists and is accessible
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			fmt.Printf("Input file does not exist: %s\n", filePath)
 			c.JSON(500, gin.H{"error": "Input file does not exist"})
 			return
 		}
-
-		// Log the file path for debugging
 		fmt.Printf("Converting file: %s to MP3\n", filePath)
-
 		cmd := exec.Command("ffmpeg", "-y", "-i", filePath, "-codec:a", "libmp3lame", "-b:a", "192k", mp3FilePath)
 		output, err := cmd.CombinedOutput()
 		if err != nil {

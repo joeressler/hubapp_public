@@ -50,6 +50,8 @@ const Chat: React.FC = () => {
   });
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const [sttProcessing, setSttProcessing] = useState(false);
+  const [chatbotProcessing, setChatbotProcessing] = useState(false);
 
 
   const handleContextChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -107,6 +109,7 @@ const Chat: React.FC = () => {
     }
 
     setLoading(true);
+    setChatbotProcessing(true); // Start Chatbot processing animation
     setError(null);
     try {
       const result = await apiService.sendChatMessage(message, context, true);
@@ -118,6 +121,7 @@ const Chat: React.FC = () => {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
       setLoading(false);
+      setChatbotProcessing(false); // End Chatbot processing animation
     }
   };
 
@@ -129,6 +133,7 @@ const Chat: React.FC = () => {
     }
 
     console.log('Processing recorded audio data');
+    setSttProcessing(true); // Start STT processing animation
 
     // Create a blob from the recorded chunks
     const audioBlob = new Blob(audioChunksRef.current, {
@@ -150,6 +155,8 @@ const Chat: React.FC = () => {
     } catch (error) {
       console.error('Error transcribing audio:', error);
       setError('Failed to transcribe audio');
+    } finally {
+      setSttProcessing(false); // End STT processing animation
     }
   };
 
@@ -292,6 +299,8 @@ const Chat: React.FC = () => {
           </div>
         )}
       </div>
+      {sttProcessing && <div className="loading-spinner" />}
+      {chatbotProcessing && <div className="loading-spinner" />}
     </div>
   );
 };

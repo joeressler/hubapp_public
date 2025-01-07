@@ -90,27 +90,25 @@ func main() {
 
 		fmt.Printf("Created speech file at: %s\n", filePath)
 
-		// Convert the file to MP3 using ffmpeg
-		mp3FilePath := fmt.Sprintf("audio/%s.mp3", fileName)
-		// Check if the file exists and is accessible
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			logError("File existence check", err, fmt.Sprintf("File path: %s", filePath))
-			c.JSON(500, gin.H{"error": "Input file does not exist"})
-			return
+		// Check if the file is already in MP3 format
+		if filepath.Ext(filePath) != ".mp3" {
+			// Convert the file to MP3 using ffmpeg
+			mp3FilePath := fmt.Sprintf("audio/%s_converted.mp3", fileName)
+			fmt.Printf("Converting file: %s to MP3\n", filePath)
+			cmd := exec.Command("ffmpeg", "-y", "-i", filePath, "-codec:a", "libmp3lame", "-b:a", "192k", mp3FilePath)
+			fmt.Printf("Executing command: %s\n", cmd.String())
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				logError("MP3 conversion", err, string(output))
+				c.JSON(500, gin.H{"error": "Failed to convert to MP3", "details": string(output)})
+				return
+			}
+			fmt.Printf("MP3 conversion successful: %s\n", mp3FilePath)
+			filePath = mp3FilePath // Update filePath to the converted file
 		}
-		fmt.Printf("Converting file: %s to MP3\n", filePath)
-		cmd := exec.Command("ffmpeg", "-y", "-i", filePath, "-codec:a", "libmp3lame", "-b:a", "192k", mp3FilePath)
-		fmt.Printf("Executing command: %s\n", cmd.String())
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			logError("MP3 conversion", err, string(output))
-			c.JSON(500, gin.H{"error": "Failed to convert to MP3", "details": string(output)})
-			return
-		}
-		fmt.Printf("MP3 conversion successful: %s\n", mp3FilePath)
 
 		// Read the MP3 file and convert to base64
-		audioData, err := os.ReadFile(mp3FilePath)
+		audioData, err := os.ReadFile(filePath)
 		if err != nil {
 			logError("Reading MP3 file", err, "")
 			c.JSON(500, gin.H{"error": "Failed to read MP3 file"})
@@ -126,9 +124,8 @@ func main() {
 		c.JSON(200, gin.H{"audio": base64Audio})
 
 		// Clean up the files
-		fmt.Printf("Cleaning up files: %s and %s\n", filePath, mp3FilePath)
+		fmt.Printf("Cleaning up files: %s\n", filePath)
 		os.Remove(filePath)
-		os.Remove(mp3FilePath)
 	})
 
 	// Add a new endpoint to handle the conversion and forwarding of audio data

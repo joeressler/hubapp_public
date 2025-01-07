@@ -15,7 +15,6 @@ import wave
 import json
 import io
 import subprocess
-import ffmpeg
 
 # Load environment variables
 load_dotenv()
@@ -301,19 +300,8 @@ def transcribe_audio():
         if not audio_file:
             return jsonify({'error': 'No audio file received'}), 400
 
-        # Save the uploaded file temporarily
-        temp_ogg_path = '/tmp/audio.ogg'
-        temp_wav_path = '/tmp/audio.wav'
-        audio_file.save(temp_ogg_path)
-
-        # Convert Ogg to WAV using ffmpeg
-        subprocess.run(['ffmpeg', '-i', temp_ogg_path, temp_wav_path], check=True)
-
-        # Read the converted WAV file
-        with open(temp_wav_path, 'rb') as f:
-            audio_data = f.read()
-
-        # Proceed with transcription as before
+        # Read the WAV file
+        audio_data = audio_file.read()
         audio_stream = io.BytesIO(audio_data)
         rec = KaldiRecognizer(model, 16000)
         wf = wave.open(audio_stream, "rb")

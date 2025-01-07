@@ -416,7 +416,7 @@ const Home: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <ProjectCard
                   title="Google Cloud Run"
-                  subtitle="gcr. subdomain"
+                  subtitle="gcr. subdomain (legacy single-container deployment)"
                   href="https://gcr.josepharessler.com"
                 />
               </Grid>

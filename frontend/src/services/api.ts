@@ -29,8 +29,7 @@ export interface LoginResponse {
 const api = axios.create({
   baseURL: '/api',
   headers: {
-    'Content-Type': 'application/json',
-    'Connection': 'keep-alive'
+    'Content-Type': 'application/json'
   },
   withCredentials: true
 });

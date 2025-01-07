@@ -117,7 +117,7 @@ func main() {
 		}
 
 		// Convert Ogg to WAV using ffmpeg
-		cmd := exec.Command("ffmpeg", "-i", tempOggPath, tempWavPath)
+		cmd := exec.Command("ffmpeg", "-i", tempOggPath, "-ar", "16000", tempWavPath)
 		if err := cmd.Run(); err != nil {
 			fmt.Println("Error converting audio format:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to convert audio format"})

@@ -306,6 +306,11 @@ def transcribe_audio():
         rec = KaldiRecognizer(model, 16000)
         wf = wave.open(audio_stream, "rb")
 
+        app.logger.info(f"WAV file params: channels={wf.getnchannels()}, " 
+                       f"width={wf.getsampwidth()}, "
+                       f"rate={wf.getframerate()}, "
+                       f"frames={wf.getnframes()}")
+
         text = ""
         while True:
             data = wf.readframes(4000)
@@ -313,9 +318,11 @@ def transcribe_audio():
                 break
             if rec.AcceptWaveform(data):
                 result = json.loads(rec.Result())
+                app.logger.info(f"Partial transcription: {result.get('text', '')}")
                 text += result.get('text', '') + ' '
 
         final_result = json.loads(rec.FinalResult())
+        app.logger.info(f"Final transcription part: {final_result.get('text', '')}")
         text += final_result.get('text', '')
 
         return jsonify({'text': text.strip()})

@@ -14,6 +14,8 @@ from vosk import Model, KaldiRecognizer
 import wave
 import json
 import io
+import subprocess
+import ffmpeg
 
 # Load environment variables
 load_dotenv()
@@ -299,49 +301,38 @@ def transcribe_audio():
         if not audio_file:
             return jsonify({'error': 'No audio file received'}), 400
 
-        # Read the audio file
-        audio_data = audio_file.read()
-        app.logger.info(f"Received audio data size: {len(audio_data)} bytes")
-        
-        # Check first few bytes for WAV header
-        app.logger.info(f"First 12 bytes: {audio_data[:12]}")
-        
+        # Save the uploaded file temporarily
+        temp_ogg_path = '/tmp/audio.ogg'
+        temp_wav_path = '/tmp/audio.wav'
+        audio_file.save(temp_ogg_path)
+
+        # Convert Ogg to WAV using ffmpeg
+        subprocess.run(['ffmpeg', '-i', temp_ogg_path, temp_wav_path], check=True)
+
+        # Read the converted WAV file
+        with open(temp_wav_path, 'rb') as f:
+            audio_data = f.read()
+
+        # Proceed with transcription as before
         audio_stream = io.BytesIO(audio_data)
-        
-        # Use Vosk to transcribe
         rec = KaldiRecognizer(model, 16000)
         wf = wave.open(audio_stream, "rb")
-        
-        app.logger.info(f"WAV file params: channels={wf.getnchannels()}, " 
-                       f"width={wf.getsampwidth()}, "
-                       f"rate={wf.getframerate()}, "
-                       f"frames={wf.getnframes()}")
 
         text = ""
-        total_frames = 0
         while True:
             data = wf.readframes(4000)
             if len(data) == 0:
                 break
-            total_frames += len(data)
             if rec.AcceptWaveform(data):
                 result = json.loads(rec.Result())
-                partial_text = result.get('text', '')
-                app.logger.info(f"Partial transcription: {partial_text}")
-                text += partial_text + ' '
-        
-        final_result = json.loads(rec.FinalResult())
-        final_text = final_result.get('text', '')
-        app.logger.info(f"Final transcription part: {final_text}")
-        text += final_text
+                text += result.get('text', '') + ' '
 
-        transcribed_text = text.strip()
-        app.logger.info(f"Total frames processed: {total_frames}")
-        app.logger.info(f"Final transcribed text: {transcribed_text}")
-        return jsonify({'text': transcribed_text})
+        final_result = json.loads(rec.FinalResult())
+        text += final_result.get('text', '')
+
+        return jsonify({'text': text.strip()})
     except Exception as e:
         app.logger.error(f"Transcription error: {str(e)}")
-        app.logger.exception("Full traceback:")
         return jsonify({'error': str(e)}), 500
 
 # Your API routes here...

@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -169,6 +170,65 @@ func main() {
 				"context": audioMessage.Context,
 			})
 		}
+	})
+
+	// Add a new endpoint to handle the conversion and forwarding of audio data
+	r.POST("/api/voice/convert-and-transcribe", func(c *gin.Context) {
+		file, err := c.FormFile("audio")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "No audio file received"})
+			return
+		}
+
+		// Save the uploaded Ogg file temporarily
+		tempOggPath := "/tmp/audio.ogg"
+		tempWavPath := "/tmp/audio.wav"
+		if err := c.SaveUploadedFile(file, tempOggPath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save audio file"})
+			return
+		}
+
+		// Convert Ogg to WAV using ffmpeg
+		cmd := exec.Command("ffmpeg", "-i", tempOggPath, tempWavPath)
+		if err := cmd.Run(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to convert audio format"})
+			return
+		}
+
+		// Read the converted WAV file
+		wavData, err := os.ReadFile(tempWavPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read converted audio file"})
+			return
+		}
+
+		// Create a multipart form to send to the Flask backend
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("audio", "audio.wav")
+		part.Write(wavData)
+		writer.WriteField("context", c.PostForm("context"))
+		writer.Close()
+
+		// Send the WAV file to the Flask backend
+		resp, err := http.Post(
+			"http://backend:8080/api/voice/transcribe",
+			writer.FormDataContentType(),
+			body,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reach backend"})
+			return
+		}
+		defer resp.Body.Close()
+
+		// Forward the response from the backend to the client
+		var result map[string]interface{}
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse backend response"})
+			return
+		}
+		c.JSON(resp.StatusCode, result)
 	})
 
 	// Start the server

@@ -126,7 +126,7 @@ const Chat: React.FC = () => {
 
     // Create a blob from the recorded chunks
     const audioBlob = new Blob(audioChunksRef.current, {
-      type: 'audio/wav',
+      type: 'audio/ogg',
     });
     audioChunksRef.current = []; // Clear the chunks
 
@@ -134,11 +134,11 @@ const Chat: React.FC = () => {
 
     // Create a FormData object to send the audio file
     const formData = new FormData();
-    formData.append('audio', audioBlob, 'audio.wav');
+    formData.append('audio', audioBlob, 'audio.ogg');
     formData.append('context', context);
 
     try {
-      const response = await apiService.transcribeAudio(formData);
+      const response = await apiService.sendAudioToVoiceService(formData);
       console.log('Received transcription:', response);
       setMessage(response.text);
     } catch (error) {

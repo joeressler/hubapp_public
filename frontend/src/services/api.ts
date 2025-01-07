@@ -91,4 +91,13 @@ export const apiService = {
     });
     return response.data;
   },
+
+  async sendAudioToVoiceService(formData: FormData): Promise<{ text: string }> {
+    const response = await api.post<{ text: string }>('/voice/convert-and-transcribe', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 }; 

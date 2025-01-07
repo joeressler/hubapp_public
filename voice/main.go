@@ -82,28 +82,34 @@ func main() {
 
 		fmt.Printf("Created speech file at: %s\n", filePath)
 
-		// Read the file and convert to base64
-		audioData, err := os.ReadFile(filePath)
-		if err != nil {
-			fmt.Println("Error reading speech file:", err)
-			c.JSON(500, gin.H{"error": "Failed to read audio file"})
+		// Convert the file to MP3 using ffmpeg
+		mp3FilePath := fmt.Sprintf("audio/%s.mp3", fileName)
+		cmd := exec.Command("ffmpeg", "-i", filePath, "-codec:a", "libmp3lame", "-b:a", "192k", mp3FilePath)
+		if err := cmd.Run(); err != nil {
+			fmt.Println("Error converting to MP3:", err)
+			c.JSON(500, gin.H{"error": "Failed to convert to MP3"})
 			return
 		}
 
-		fmt.Printf("Read audio file of size: %d bytes\n", len(audioData))
+		// Read the MP3 file and convert to base64
+		audioData, err := os.ReadFile(mp3FilePath)
+		if err != nil {
+			fmt.Println("Error reading MP3 file:", err)
+			c.JSON(500, gin.H{"error": "Failed to read MP3 file"})
+			return
+		}
+
+		fmt.Printf("Read MP3 file of size: %d bytes\n", len(audioData))
 
 		// Convert to base64 and send as JSON
 		base64Audio := base64.StdEncoding.EncodeToString(audioData)
-		fmt.Println("Converted audio to base64")
+		fmt.Println("Converted MP3 to base64")
 
 		c.JSON(200, gin.H{"audio": base64Audio})
 
-		// Clean up the file
-		if err := os.Remove(filePath); err != nil {
-			fmt.Println("Error removing speech file:", err)
-		} else {
-			fmt.Println("Cleaned up speech file:", filePath)
-		}
+		// Clean up the files
+		os.Remove(filePath)
+		os.Remove(mp3FilePath)
 	})
 
 	// Add a new endpoint to handle the conversion and forwarding of audio data

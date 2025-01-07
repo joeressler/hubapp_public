@@ -302,9 +302,10 @@ const Chat: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
       {sttProcessing && <div className="loading-spinner" />}
       {chatbotProcessing && <div className="loading-spinner" />}
+      </div>
+
     </div>
   );
 };

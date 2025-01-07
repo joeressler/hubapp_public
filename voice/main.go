@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -52,6 +53,13 @@ func cleanupOldFiles() {
 	})
 }
 
+func logError(context string, err error, details string) {
+	log.Printf("[%s] ERROR: %s - %s\n", time.Now().Format(time.RFC3339), context, err)
+	if details != "" {
+		log.Printf("Details: %s\n", details)
+	}
+}
+
 func main() {
 	r := gin.Default()
 
@@ -64,7 +72,7 @@ func main() {
 			Text string `json:"text"`
 		}
 		if err := c.BindJSON(&data); err != nil {
-			fmt.Println("Error parsing TTS request:", err)
+			logError("Parsing TTS request", err, "")
 			c.JSON(400, gin.H{"error": "Invalid request"})
 			return
 		}
@@ -75,7 +83,7 @@ func main() {
 		speech := htgotts.Speech{Folder: "audio", Language: "en"}
 		filePath, err := speech.CreateSpeechFile(data.Text, fileName)
 		if err != nil {
-			fmt.Println("Error creating speech file:", err)
+			logError("Creating speech file", err, "")
 			c.JSON(500, gin.H{"error": "Failed to create speech file"})
 			return
 		}
@@ -86,24 +94,25 @@ func main() {
 		mp3FilePath := fmt.Sprintf("audio/%s.mp3", fileName)
 		// Check if the file exists and is accessible
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			fmt.Printf("Input file does not exist: %s\n", filePath)
+			logError("File existence check", err, fmt.Sprintf("File path: %s", filePath))
 			c.JSON(500, gin.H{"error": "Input file does not exist"})
 			return
 		}
 		fmt.Printf("Converting file: %s to MP3\n", filePath)
 		cmd := exec.Command("ffmpeg", "-y", "-i", filePath, "-codec:a", "libmp3lame", "-b:a", "192k", mp3FilePath)
+		fmt.Printf("Executing command: %s\n", cmd.String())
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Printf("Error converting to MP3: %s\n", string(output))
-			fmt.Printf("ffmpeg command: %s\n", cmd.String())
+			logError("MP3 conversion", err, string(output))
 			c.JSON(500, gin.H{"error": "Failed to convert to MP3", "details": string(output)})
 			return
 		}
+		fmt.Printf("MP3 conversion successful: %s\n", mp3FilePath)
 
 		// Read the MP3 file and convert to base64
 		audioData, err := os.ReadFile(mp3FilePath)
 		if err != nil {
-			fmt.Println("Error reading MP3 file:", err)
+			logError("Reading MP3 file", err, "")
 			c.JSON(500, gin.H{"error": "Failed to read MP3 file"})
 			return
 		}
@@ -117,6 +126,7 @@ func main() {
 		c.JSON(200, gin.H{"audio": base64Audio})
 
 		// Clean up the files
+		fmt.Printf("Cleaning up files: %s and %s\n", filePath, mp3FilePath)
 		os.Remove(filePath)
 		os.Remove(mp3FilePath)
 	})
@@ -127,7 +137,7 @@ func main() {
 
 		file, err := c.FormFile("audio")
 		if err != nil {
-			fmt.Println("Error receiving audio file:", err)
+			logError("Receiving audio file", err, "")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "No audio file received"})
 			return
 		}
@@ -136,26 +146,30 @@ func main() {
 		tempOggPath := "/tmp/audio.ogg"
 		tempWavPath := "/tmp/audio.wav"
 		if err := c.SaveUploadedFile(file, tempOggPath); err != nil {
-			fmt.Println("Error saving audio file:", err)
+			logError("Saving audio file", err, fmt.Sprintf("Temp path: %s", tempOggPath))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save audio file"})
 			return
 		}
+		fmt.Printf("Saved uploaded audio file to: %s\n", tempOggPath)
 
 		// Convert Ogg to WAV using ffmpeg
 		cmd := exec.Command("ffmpeg", "-i", tempOggPath, "-ar", "16000", tempWavPath)
+		fmt.Printf("Executing command: %s\n", cmd.String())
 		if err := cmd.Run(); err != nil {
-			fmt.Println("Error converting audio format:", err)
+			logError("Converting audio format", err, "")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to convert audio format"})
 			return
 		}
+		fmt.Printf("Converted Ogg to WAV: %s\n", tempWavPath)
 
 		// Read the converted WAV file
 		wavData, err := os.ReadFile(tempWavPath)
 		if err != nil {
-			fmt.Println("Error reading converted audio file:", err)
+			logError("Reading converted audio file", err, "")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read converted audio file"})
 			return
 		}
+		fmt.Printf("Read WAV file of size: %d bytes\n", len(wavData))
 
 		// Create a multipart form to send to the Flask backend
 		body := &bytes.Buffer{}
@@ -172,7 +186,7 @@ func main() {
 			body,
 		)
 		if err != nil {
-			fmt.Println("Error sending to backend:", err)
+			logError("Sending to backend", err, "")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reach backend"})
 			return
 		}
@@ -181,7 +195,7 @@ func main() {
 		// Forward the response from the backend to the client
 		var result map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			fmt.Println("Error parsing backend response:", err)
+			logError("Parsing backend response", err, "")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse backend response"})
 			return
 		}
@@ -190,7 +204,7 @@ func main() {
 
 	// Start the server
 	if err := r.Run(":8081"); err != nil {
-		panic(err)
+		log.Fatalf("Failed to start server: %s\n", err)
 	}
 
 	go func() {

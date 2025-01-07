@@ -236,6 +236,80 @@ func main() {
 		os.Remove(filePath)
 	})
 
+	// Add a new REST endpoint to handle audio data
+	r.POST("/api/voice/transcribe", func(c *gin.Context) {
+		var audioMessage struct {
+			Audio      string `json:"audio"`
+			Context    string `json:"context"`
+			SampleRate int    `json:"sampleRate"`
+		}
+
+		if err := c.BindJSON(&audioMessage); err != nil {
+			fmt.Println("Error parsing request:", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+			return
+		}
+		fmt.Println("Parsed audio message:", audioMessage)
+
+		// Decode the base64 audio data
+		audioData, err := base64.StdEncoding.DecodeString(strings.Split(audioMessage.Audio, ",")[1])
+		if err != nil {
+			fmt.Println("Error decoding audio data:", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid audio data"})
+			return
+		}
+		fmt.Println("Decoded audio data size:", len(audioData))
+
+		// Create a buffer for the WAV file
+		wavBuffer := &bytes.Buffer{}
+		writeWAVHeader(wavBuffer, len(audioData), audioMessage.SampleRate)
+		wavBuffer.Write(audioData)
+
+		// Forward to Flask backend
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormFile("audio", "audio.wav")
+		part.Write(wavBuffer.Bytes())
+		writer.WriteField("context", audioMessage.Context)
+		writer.Close()
+
+		resp, err := http.Post(
+			"http://backend:8080/api/voice/transcribe",
+			writer.FormDataContentType(),
+			body,
+		)
+		if err != nil {
+			fmt.Println("Error forwarding to backend:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reach backend"})
+			return
+		}
+
+		// Read and parse the response
+		var result struct {
+			Text  string `json:"text"`
+			Error string `json:"error"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			fmt.Println("Error parsing backend response:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse backend response"})
+			resp.Body.Close()
+			return
+		}
+		resp.Body.Close()
+
+		fmt.Printf("Transcription result: %+v\n", result)
+
+		// Send the transcription back to the client
+		if result.Error != "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"text":    result.Text,
+				"context": audioMessage.Context,
+			})
+		}
+	})
+
 	// Start the server
 	if err := r.Run(":8081"); err != nil {
 		panic(err)

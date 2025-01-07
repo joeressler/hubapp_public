@@ -242,21 +242,31 @@ const Chat: React.FC = () => {
     // Create WAV blob with the processed data
     const wavBlob = new Blob([pcmData.buffer], { type: 'audio/wav' });
 
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const base64data = reader.result;
-            console.log('Sending audio data of size:', wavBlob.size);
-            wsRef.current?.send(JSON.stringify({ 
-                audio: base64data, 
-                context,
-                sampleRate: 16000
-            }));
-        };
-        reader.readAsDataURL(wavBlob);
+    // Convert the WebSocket send to a REST API call
+    if (audioChunksRef.current.length > 0) {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64data = reader.result as string;
+        console.log('Sending audio data of size:', audioBlob.size);
+
+        try {
+          const response = await apiService.transcribeAudio({
+            audio: base64data,
+            context,
+            sampleRate: 16000,
+          });
+          console.log('Received transcription:', response);
+          setMessage(response.text);
+        } catch (error) {
+          console.error('Error transcribing audio:', error);
+          setError('Failed to transcribe audio');
+        }
+      };
+      reader.readAsDataURL(audioBlob);
     } else {
-        console.error('WebSocket is not connected');
-        setError('Connection to voice service lost');
+      console.error('No audio data to send');
+      setError('No audio data to send');
     }
   };
 

@@ -64,6 +64,7 @@ func main() {
 			Text string `json:"text"`
 		}
 		if err := c.BindJSON(&data); err != nil {
+			fmt.Println("Error parsing TTS request:", err)
 			c.JSON(400, gin.H{"error": "Invalid request"})
 			return
 		}
@@ -84,16 +85,25 @@ func main() {
 		// Read the file and convert to base64
 		audioData, err := os.ReadFile(filePath)
 		if err != nil {
+			fmt.Println("Error reading speech file:", err)
 			c.JSON(500, gin.H{"error": "Failed to read audio file"})
 			return
 		}
 
+		fmt.Printf("Read audio file of size: %d bytes\n", len(audioData))
+
 		// Convert to base64 and send as JSON
 		base64Audio := base64.StdEncoding.EncodeToString(audioData)
+		fmt.Println("Converted audio to base64")
+
 		c.JSON(200, gin.H{"audio": base64Audio})
 
 		// Clean up the file
-		os.Remove(filePath)
+		if err := os.Remove(filePath); err != nil {
+			fmt.Println("Error removing speech file:", err)
+		} else {
+			fmt.Println("Cleaned up speech file:", filePath)
+		}
 	})
 
 	// Add a new endpoint to handle the conversion and forwarding of audio data

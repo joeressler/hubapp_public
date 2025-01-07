@@ -81,6 +81,9 @@ const Chat: React.FC = () => {
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
 
+      // Log the audio URL for debugging
+      console.log('Playing audio from URL:', audioUrl);
+
       // Clean up the object URL after playback
       audio.onended = () => {
         URL.revokeObjectURL(audioUrl);

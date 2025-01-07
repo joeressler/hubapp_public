@@ -68,14 +68,16 @@ const Chat: React.FC = () => {
 
   const playResponse = async (audioData: string) => {
     try {
-      // Create a Blob from the base64 audio data
+      // Decode base64 audio data
       const byteCharacters = atob(audioData);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'audio/mp3' });
+
+      // Create a Blob with the correct MIME type
+      const blob = new Blob([byteArray], { type: 'audio/mpeg' }); // Ensure this matches the actual format
 
       // Create an object URL from the blob
       const audioUrl = URL.createObjectURL(blob);
@@ -89,6 +91,7 @@ const Chat: React.FC = () => {
         URL.revokeObjectURL(audioUrl);
       };
 
+      // Attempt to play the audio
       await audio.play();
     } catch (err) {
       console.error('Error playing audio:', err);

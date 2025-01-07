@@ -124,11 +124,6 @@ const Chat: React.FC = () => {
 
     console.log('Processing recorded audio data');
 
-    // Create an audio context to process the audio data
-    const audioContext = new AudioContext({
-      sampleRate: 16000,
-    });
-
     // Create a blob from the recorded chunks
     const audioBlob = new Blob(audioChunksRef.current, {
       type: 'audio/wav',
@@ -137,57 +132,19 @@ const Chat: React.FC = () => {
 
     console.log('Audio blob created:', audioBlob);
 
-    // Convert blob to array buffer
-    const arrayBuffer = await audioBlob.arrayBuffer();
+    // Create a FormData object to send the audio file
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'audio.wav');
+    formData.append('context', context);
 
-    // Decode the audio data
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-    // Create a buffer with the correct sample rate and format
-    const pcmBuffer = audioContext.createBuffer(1, audioBuffer.length, 16000);
-
-    // Copy and convert the audio data
-    const inputData = audioBuffer.getChannelData(0);
-    const outputData = pcmBuffer.getChannelData(0);
-
-    for (let i = 0; i < audioBuffer.length; i++) {
-      outputData[i] = inputData[i];
+    try {
+      const response = await apiService.transcribeAudio(formData);
+      console.log('Received transcription:', response);
+      setMessage(response.text);
+    } catch (error) {
+      console.error('Error transcribing audio:', error);
+      setError('Failed to transcribe audio');
     }
-
-    // Convert to 16-bit PCM
-    const pcmData = new Int16Array(pcmBuffer.length);
-    const channelData = pcmBuffer.getChannelData(0);
-    for (let i = 0; i < pcmBuffer.length; i++) {
-      pcmData[i] = Math.max(-1, Math.min(1, channelData[i])) * 0x7fff;
-    }
-
-    console.log('PCM data prepared:', pcmData);
-
-    // Create WAV blob with the processed data
-    const wavBlob = new Blob([pcmData.buffer], { type: 'audio/wav' });
-
-    console.log('WAV blob created:', wavBlob);
-
-    // Convert the WebSocket send to a REST API call
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64data = reader.result as string;
-      console.log('Sending audio data of size:', wavBlob.size);
-
-      try {
-        const response = await apiService.transcribeAudio({
-          audio: base64data,
-          context,
-          sampleRate: 16000,
-        });
-        console.log('Received transcription:', response);
-        setMessage(response.text);
-      } catch (error) {
-        console.error('Error transcribing audio:', error);
-        setError('Failed to transcribe audio');
-      }
-    };
-    reader.readAsDataURL(wavBlob);
   };
 
   const toggleRecording = async () => {

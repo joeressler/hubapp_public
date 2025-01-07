@@ -83,8 +83,12 @@ export const apiService = {
     return response.data;
   },
 
-  async transcribeAudio(data: { audio: string; context: string; sampleRate: number }): Promise<{ text: string }> {
-    const response = await api.post<{ text: string }>('/voice/transcribe', data);
+  async transcribeAudio(formData: FormData): Promise<{ text: string }> {
+    const response = await api.post<{ text: string }>('/voice/transcribe', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 }; 

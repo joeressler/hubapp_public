@@ -159,7 +159,6 @@ const Home: React.FC = () => {
     "Full Stack Development",
     "Python Flask Apps",
     "React & TypeScript",
-    "WebSocket Integration",
     "Docker & Containerization",
     "AWS EC2 Deployment",
     "Relational Database Design (MySQL)",
@@ -167,15 +166,13 @@ const Home: React.FC = () => {
     "User Authentication & Security",
     "Vector Databases (LlamaIndex)",
     "OpenAI Integration",
-    "Speech-to-Text (Vosk)",
-    "Text-to-Speech (htgo-tts)",
+    "Speech-to-Text (Vosk) & Text-to-Speech (htgo-tts)",
     "Nginx Reverse Proxy",
-    "SSL/TLS Configuration",
-    "Domain & DNS Management",
-    "CORS & Security Headers",
     "Go Microservices",
     "CI/CD Pipelines (Jenkins)",
-    "Cloud Infrastructure"
+    "Cloud Infrastructure",
+    "Voice Recognition & Processing",
+    "Audio Playback & Manipulation"
   ];
 
   return (

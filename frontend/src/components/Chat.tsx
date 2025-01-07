@@ -215,6 +215,10 @@ const Chat: React.FC = () => {
       <p className="gradient-text" style={{ textAlign: 'center', marginBottom: '2rem' }}>
         Get help with your favorite games using my GPT3.5 LLM RAG-powered support system.
       </p>
+
+      <div className="feature-note" style={{ textAlign: 'center', marginBottom: '1rem', color: '#38bdf8' }}>
+        Try out our new Go microservice-backed feature: Speak to the bot and have it talk back to you!
+      </div>
       
       <div className="form-container">
         <div className="chat-form-group">

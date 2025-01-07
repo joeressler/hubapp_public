@@ -129,7 +129,6 @@ def check_auth():
     return jsonify(None), 401
 
 @app.route('/api/games')
-@login_required
 def get_games():
     try:
         games = GameDB.listgames()

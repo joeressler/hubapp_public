@@ -88,7 +88,8 @@ func main() {
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Printf("Error converting to MP3: %s\n", string(output))
-			c.JSON(500, gin.H{"error": "Failed to convert to MP3"})
+			fmt.Printf("ffmpeg command: %s\n", cmd.String())
+			c.JSON(500, gin.H{"error": "Failed to convert to MP3", "details": string(output)})
 			return
 		}
 

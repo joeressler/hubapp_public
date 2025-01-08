@@ -90,23 +90,6 @@ func main() {
 
 		fmt.Printf("Created speech file at: %s\n", filePath)
 
-		// Check if the file is already in MP3 format
-		if filepath.Ext(filePath) != ".mp3" {
-			// Convert the file to MP3 using ffmpeg
-			mp3FilePath := fmt.Sprintf("audio/%s_converted.mp3", fileName)
-			fmt.Printf("Converting file: %s to MP3\n", filePath)
-			cmd := exec.Command("ffmpeg", "-y", "-i", filePath, "-codec:a", "libmp3lame", "-b:a", "192k", mp3FilePath)
-			fmt.Printf("Executing command: %s\n", cmd.String())
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				logError("MP3 conversion", err, string(output))
-				c.JSON(500, gin.H{"error": "Failed to convert to MP3", "details": string(output)})
-				return
-			}
-			fmt.Printf("MP3 conversion successful: %s\n", mp3FilePath)
-			filePath = mp3FilePath // Update filePath to the converted file
-		}
-
 		// Read the MP3 file and convert to base64
 		audioData, err := os.ReadFile(filePath)
 		if err != nil {

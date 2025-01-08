@@ -101,7 +101,7 @@ func main() {
 
 		fmt.Printf("Created speech file at: %s\n", filePath)
 
-		// Read the MP3 file and convert to base64
+		// Read the MP3 file and validate content
 		audioData, err := os.ReadFile(filePath)
 		if err != nil {
 			logError("Reading MP3 file", err, "")
@@ -109,12 +109,18 @@ func main() {
 			return
 		}
 
+		// Validate that we have MP3 data (check for MP3 magic numbers)
+		if len(audioData) < 3 || string(audioData[:3]) != "ID3" {
+			logError("Invalid MP3 data", fmt.Errorf("not a valid MP3 file"), "")
+			c.JSON(500, gin.H{"error": "Invalid MP3 data generated"})
+			return
+		}
+
 		fmt.Printf("Read MP3 file of size: %d bytes\n", len(audioData))
-
-		// Convert to base64 and send as JSON with data URI prefix
 		base64Audio := "data:audio/mp3;base64," + base64.StdEncoding.EncodeToString(audioData)
-		fmt.Println("Converted MP3 to base64")
 
+		// Set proper content type
+		c.Header("Content-Type", "application/json")
 		c.JSON(200, gin.H{"audio": base64Audio})
 
 		// Clean up the files after a short delay to ensure the file is fully sent

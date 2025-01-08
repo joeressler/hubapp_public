@@ -97,11 +97,14 @@ const Chat: React.FC = () => {
       */
      const base64Audio = `data:audio/mp3;base64,${audioData}`;
      const audio = new Audio(base64Audio);
-     audio.controls = true;
+     audio.controls = false;
      document.body.appendChild(audio);
 
       // Attempt to play the audio
       await audio.play();
+      audio.onended = () => {
+        document.body.removeChild(audio);
+      };
     } catch (err) {
       console.error('Error playing audio:', err);
       setError('Failed to play audio response');

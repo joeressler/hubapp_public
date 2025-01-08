@@ -79,7 +79,7 @@ const Chat: React.FC = () => {
       const byteArray = new Uint8Array(byteNumbers);
 
       // Create a Blob with the correct MIME type
-      const blob = new Blob([byteArray], { type: 'audio/mpeg' }); // Ensure this matches the actual format
+      const blob = new Blob([byteArray], { type: 'audio/mp3' }); // Ensure this matches the actual format
 
       // Create an object URL from the blob
       const audioUrl = URL.createObjectURL(blob);

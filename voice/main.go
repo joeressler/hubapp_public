@@ -5,16 +5,17 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	htgotts "github.com/hegedustibor/htgo-tts"
 )
 
 func corsMiddleware() gin.HandlerFunc {
@@ -60,6 +61,82 @@ func logError(context string, err error, details string) {
 	}
 }
 
+// generateSpeech uses Google Translate's TTS service directly
+func generateSpeech(text string, outputPath string) error {
+	// Google Translate TTS URL
+	baseURL := "https://translate.google.com/translate_tts"
+
+	// Split text into chunks of 200 characters max (Google TTS limit)
+	const chunkSize = 200
+	textRunes := []rune(text)
+
+	var audioChunks [][]byte
+
+	for i := 0; i < len(textRunes); i += chunkSize {
+		end := i + chunkSize
+		if end > len(textRunes) {
+			end = len(textRunes)
+		}
+		chunk := string(textRunes[i:end])
+
+		// Create URL for this chunk
+		params := url.Values{}
+		params.Add("ie", "UTF-8")
+		params.Add("tl", "en")
+		params.Add("client", "tw-ob")
+		params.Add("q", chunk)
+
+		fullURL := baseURL + "?" + params.Encode()
+
+		// Make request with appropriate headers
+		req, err := http.NewRequest("GET", fullURL, nil)
+		if err != nil {
+			return fmt.Errorf("failed to create request: %v", err)
+		}
+
+		req.Header.Set("User-Agent", "Mozilla/5.0")
+		req.Header.Set("Referer", "http://translate.google.com/")
+
+		// Get the audio data
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("failed to get audio: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("bad status: %s", resp.Status)
+		}
+
+		// Read the audio data
+		audioData, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read audio data: %v", err)
+		}
+
+		audioChunks = append(audioChunks, audioData)
+
+		// Small delay to avoid rate limiting
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	// Combine all chunks into a single MP3 file
+	outputFile, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("failed to create output file: %v", err)
+	}
+	defer outputFile.Close()
+
+	for _, chunk := range audioChunks {
+		if _, err := outputFile.Write(chunk); err != nil {
+			return fmt.Errorf("failed to write chunk: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	r := gin.Default()
 
@@ -79,59 +156,51 @@ func main() {
 
 		fmt.Println("TTS received text:", data.Text)
 
-		fileName := fmt.Sprintf("response_%d", time.Now().UnixNano())
-		speech := htgotts.Speech{
-			Folder:   "audio",
-			Language: "en",
-		}
-
-		// Create the audio directory if it doesn't exist
+		// Create audio directory if it doesn't exist
 		if err := os.MkdirAll("audio", 0755); err != nil {
 			logError("Creating audio directory", err, "")
 			c.JSON(500, gin.H{"error": "Failed to create audio directory"})
 			return
 		}
 
-		filePath, err := speech.CreateSpeechFile(data.Text, fileName)
-		if err != nil {
-			logError("Creating speech file", err, "")
-			c.JSON(500, gin.H{"error": "Failed to create speech file"})
+		// Generate unique filename
+		fileName := fmt.Sprintf("audio/response_%d.mp3", time.Now().UnixNano())
+
+		// Generate speech using Google TTS
+		if err := generateSpeech(data.Text, fileName); err != nil {
+			logError("Generating speech", err, "")
+			c.JSON(500, gin.H{"error": "Failed to generate speech"})
 			return
 		}
 
-		fmt.Printf("Created speech file at: %s\n", filePath)
-
-		// Read the MP3 file and validate content
-		audioData, err := os.ReadFile(filePath)
+		// Read the generated MP3 file
+		audioData, err := os.ReadFile(fileName)
 		if err != nil {
 			logError("Reading MP3 file", err, "")
 			c.JSON(500, gin.H{"error": "Failed to read MP3 file"})
 			return
 		}
 
-		// Validate that we have MP3 data (check for MP3 magic numbers)
-		if len(audioData) < 3 || string(audioData[:3]) != "ID3" {
-			logError("Invalid MP3 data", fmt.Errorf("not a valid MP3 file"), "")
-			c.JSON(500, gin.H{"error": "Invalid MP3 data generated"})
-			return
+		// Debug: Log file size and first few bytes
+		fmt.Printf("Generated MP3 file size: %d bytes\n", len(audioData))
+		if len(audioData) > 16 {
+			fmt.Printf("First 16 bytes: %x\n", audioData[:16])
 		}
 
-		fmt.Printf("Read MP3 file of size: %d bytes\n", len(audioData))
+		// Convert to base64 with proper data URI
 		base64Audio := "data:audio/mp3;base64," + base64.StdEncoding.EncodeToString(audioData)
 
-		// Set proper content type
-		c.Header("Content-Type", "application/json")
-		c.JSON(200, gin.H{"audio": base64Audio})
-
-		// Clean up the files after a short delay to ensure the file is fully sent
-		go func() {
-			time.Sleep(1 * time.Second)
-			if err := os.Remove(filePath); err != nil {
-				logError("Cleaning up file", err, filePath)
+		// Clean up the file after sending
+		defer func() {
+			if err := os.Remove(fileName); err != nil {
+				logError("Cleaning up file", err, fileName)
 			} else {
-				fmt.Printf("Cleaned up file: %s\n", filePath)
+				fmt.Printf("Cleaned up file: %s\n", fileName)
 			}
 		}()
+
+		c.Header("Content-Type", "application/json")
+		c.JSON(200, gin.H{"audio": base64Audio})
 	})
 
 	// Add a new endpoint to handle the conversion and forwarding of audio data

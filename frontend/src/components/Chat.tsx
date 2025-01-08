@@ -83,7 +83,7 @@ const Chat: React.FC = () => {
 
       // Create an object URL from the blob
       const audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio(audioUrl);
+      const audio = new Audio(audioUrl); // Set the source URL directly
 
       // Log the audio URL for debugging
       console.log('Playing audio from URL:', audioUrl);

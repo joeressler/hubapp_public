@@ -70,22 +70,20 @@ const Chat: React.FC = () => {
 
   const playResponse = async (audioData: string) => {
     try {
-      /*
       // Decode base64 audio data
-      const byteCharacters = atob(audioData); // Use atob for base64 decoding
+      const byteCharacters = atob(audioData); // Decode base64 string
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
 
-      // Create a Blob with the correct MIME type
-      const blob = new Blob([byteArray], { type: 'audio/mp3' }); // Ensure this matches the actual format
+      // Create a Blob with the correct MIME type for MP3
+      const blob = new Blob([byteArray], { type: 'audio/mpeg' });
 
       // Create an object URL from the blob
       const audioUrl = URL.createObjectURL(blob);
-      
-      const audio = new Audio(audioUrl); // Set the source URL directly
+      const audio = new Audio(audioUrl);
 
       // Log the audio URL for debugging
       console.log('Playing audio from URL:', audioUrl);
@@ -94,17 +92,9 @@ const Chat: React.FC = () => {
       audio.onended = () => {
         URL.revokeObjectURL(audioUrl);
       };
-      */
-     const base64Audio = `data:audio/mp3;base64,${audioData}`;
-     const audio = new Audio(base64Audio);
-     audio.controls = true;
-     document.body.appendChild(audio);
 
       // Attempt to play the audio
       await audio.play();
-      audio.onended = () => {
-        document.body.removeChild(audio);
-      };
     } catch (err) {
       console.error('Error playing audio:', err);
       setError('Failed to play audio response');

@@ -70,8 +70,9 @@ const Chat: React.FC = () => {
 
   const playResponse = async (audioData: string) => {
     try {
+      /*
       // Decode base64 audio data
-      const byteCharacters = Buffer.from(audioData, 'base64');
+      const byteCharacters = atob(audioData); // Use atob for base64 decoding
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -83,6 +84,7 @@ const Chat: React.FC = () => {
 
       // Create an object URL from the blob
       const audioUrl = URL.createObjectURL(blob);
+      
       const audio = new Audio(audioUrl); // Set the source URL directly
 
       // Log the audio URL for debugging
@@ -92,6 +94,11 @@ const Chat: React.FC = () => {
       audio.onended = () => {
         URL.revokeObjectURL(audioUrl);
       };
+      */
+     const base64Audio = `data:audio/mp3;base64,${audioData}`;
+     const audio = new Audio(base64Audio);
+     audio.controls = true;
+     document.body.appendChild(audio);
 
       // Attempt to play the audio
       await audio.play();

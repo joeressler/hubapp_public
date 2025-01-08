@@ -70,13 +70,9 @@ const Chat: React.FC = () => {
 
   const playResponse = async (audioData: string) => {
     try {
-      // Decode base64 audio data
-      const byteCharacters = atob(audioData);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
+      // Decode base64 audio data using Buffer
+      const byteCharacters = Buffer.from(audioData, 'base64');
+      const byteArray = new Uint8Array(byteCharacters);
 
       // Create a Blob with the correct MIME type
       const blob = new Blob([byteArray], { type: 'audio/mp3' }); // Ensure this matches the actual format

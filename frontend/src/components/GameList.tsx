@@ -59,7 +59,7 @@ const GameList: React.FC = () => {
               marginBottom: '1rem',
               textShadow: '0 0 5px rgba(56, 189, 248, 0.2)'
             }}>
-              Here is a list of games I have rated along with my 100% status in them and the game's average user rating.
+              Here is a list of games I have rated along with my 100% status for them and the game's average user rating.
             </caption>
             <thead>
               <tr>

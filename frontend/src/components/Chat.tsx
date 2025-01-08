@@ -71,7 +71,7 @@ const Chat: React.FC = () => {
   const playResponse = async (audioData: string) => {
     try {
       // Decode base64 audio data
-      const byteCharacters = window.atob(audioData);
+      const byteCharacters = Buffer.from(audioData, 'base64');
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);

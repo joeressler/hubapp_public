@@ -176,7 +176,7 @@ def chat():
                 return jsonify({'error': 'TTS service error'}), 500
                 
             # Get the base64 audio from the response
-            audio_data = tts_response.json().get('audio')
+            audio_data = tts_response.get('audio')
             if not audio_data:
                 print("No audio data received from TTS service")
                 return jsonify({'error': 'No audio data received from TTS service'}), 500

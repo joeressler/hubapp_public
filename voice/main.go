@@ -80,7 +80,18 @@ func main() {
 		fmt.Println("TTS received text:", data.Text)
 
 		fileName := fmt.Sprintf("response_%d", time.Now().UnixNano())
-		speech := htgotts.Speech{Folder: "audio", Language: "en"}
+		speech := htgotts.Speech{
+			Folder:   "audio",
+			Language: "en",
+		}
+
+		// Create the audio directory if it doesn't exist
+		if err := os.MkdirAll("audio", 0755); err != nil {
+			logError("Creating audio directory", err, "")
+			c.JSON(500, gin.H{"error": "Failed to create audio directory"})
+			return
+		}
+
 		filePath, err := speech.CreateSpeechFile(data.Text, fileName)
 		if err != nil {
 			logError("Creating speech file", err, "")
@@ -100,15 +111,21 @@ func main() {
 
 		fmt.Printf("Read MP3 file of size: %d bytes\n", len(audioData))
 
-		// Convert to base64 and send as JSON
-		base64Audio := base64.StdEncoding.EncodeToString(audioData)
+		// Convert to base64 and send as JSON with data URI prefix
+		base64Audio := "data:audio/mp3;base64," + base64.StdEncoding.EncodeToString(audioData)
 		fmt.Println("Converted MP3 to base64")
 
 		c.JSON(200, gin.H{"audio": base64Audio})
 
-		// Clean up the files
-		fmt.Printf("Cleaning up files: %s\n", filePath)
-		os.Remove(filePath)
+		// Clean up the files after a short delay to ensure the file is fully sent
+		go func() {
+			time.Sleep(1 * time.Second)
+			if err := os.Remove(filePath); err != nil {
+				logError("Cleaning up file", err, filePath)
+			} else {
+				fmt.Printf("Cleaned up file: %s\n", filePath)
+			}
+		}()
 	})
 
 	// Add a new endpoint to handle the conversion and forwarding of audio data

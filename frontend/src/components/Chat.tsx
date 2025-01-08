@@ -70,34 +70,80 @@ const Chat: React.FC = () => {
 
   const playResponse = async (audioData: string) => {
     try {
-      // Decode base64 audio data
-      const byteCharacters = atob(audioData); // Decode base64 string
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      // Add validation for audio data
+      if (!audioData) {
+        throw new Error('No audio data received');
       }
-      const byteArray = new Uint8Array(byteNumbers);
 
-      // Create a Blob with the correct MIME type for MP3
-      const blob = new Blob([byteArray], { type: 'audio/mpeg' });
+      console.log('Audio data preview:', audioData.substring(0, 100));
+
+      // Create a Blob directly from the base64 data
+      let blob;
+      if (audioData.startsWith('data:audio/mp3;base64,')) {
+        // Data is already in data URI format
+        const base64Data = audioData.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        blob = new Blob([byteArray], { type: 'audio/mp3' });
+      } else {
+        // Handle plain base64 data
+        const byteCharacters = atob(audioData);
+        const byteNumbers = new Array(byteCharacters.length);
+        
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        blob = new Blob([byteArray], { type: 'audio/mp3' });
+      }
+
+      // Validate blob size
+      if (blob.size === 0) {
+        throw new Error('Created audio blob is empty');
+      }
+      console.log('Created blob size:', blob.size, 'bytes');
 
       // Create an object URL from the blob
       const audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio(audioUrl);
+      const audio = new Audio();
 
-      // Log the audio URL for debugging
-      console.log('Playing audio from URL:', audioUrl);
+      // Add error handling for audio loading
+      audio.onerror = ((e: Event | string) => {
+        const target = (e instanceof Event ? e.currentTarget : audio) as HTMLAudioElement;
+        console.error('Audio loading error:', {
+          code: target.error?.code,
+          message: target.error?.message
+        });
+        URL.revokeObjectURL(audioUrl);
+        setError(`Failed to load audio: ${target.error?.message || 'Unknown error'}`);
+      });
 
       // Clean up the object URL after playback
       audio.onended = () => {
         URL.revokeObjectURL(audioUrl);
       };
 
+      // Set the source and load the audio
+      audio.src = audioUrl;
+      await audio.load();
+
+      // Log when audio is loaded
+      audio.onloadedmetadata = () => {
+        console.log('Audio metadata loaded. Duration:', audio.duration);
+      };
+
       // Attempt to play the audio
       await audio.play();
     } catch (err) {
       console.error('Error playing audio:', err);
-      setError('Failed to play audio response');
+      setError(`Failed to play audio response: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 

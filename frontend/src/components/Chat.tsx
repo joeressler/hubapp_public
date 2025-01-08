@@ -97,7 +97,7 @@ const Chat: React.FC = () => {
       */
      const base64Audio = `data:audio/mp3;base64,${audioData}`;
      const audio = new Audio(base64Audio);
-     audio.controls = false;
+     audio.controls = true;
      document.body.appendChild(audio);
 
       // Attempt to play the audio

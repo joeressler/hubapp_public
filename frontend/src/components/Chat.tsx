@@ -149,25 +149,25 @@ const Chat: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (typeof message !== 'string' || !message.trim()) {
-      setError('Please enter a valid message.');
-      return;
-    }
+    if (!message.trim()) return;
 
-    setLoading(true);
-    setChatbotProcessing(true); // Start Chatbot processing animation
     setError(null);
+    setLoading(true);
+    setChatbotProcessing(true);
+    
     try {
       const result = await apiService.sendChatMessage(message, context, true);
       setResponse(result.response);
       if (result.audio) {
         await playResponse(result.audio);
       }
+      setMessage('');  // Clear the input only on success
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      console.error('Chat error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to get response. Please try again.');
     } finally {
       setLoading(false);
-      setChatbotProcessing(false); // End Chatbot processing animation
+      setChatbotProcessing(false);
     }
   };
 
@@ -269,7 +269,7 @@ const Chat: React.FC = () => {
         Try out our new Go microservice-backed feature: Speak to the bot and have it talk back to you!
       </div>
       
-      <div className="form-container">
+      <div className="form-container crystal-card">
         <div className="chat-form-group">
           <label>Select Game:</label>
           <div className="chat-select-container">
@@ -277,6 +277,7 @@ const Chat: React.FC = () => {
               value={context} 
               onChange={handleContextChange}
               className="chat-select"
+              disabled={loading || sttProcessing}
             >
               {GAME_CONTEXTS.map((ctx) => (
                 <option key={ctx.value} value={ctx.value}>
@@ -302,7 +303,10 @@ const Chat: React.FC = () => {
             marginBottom: '1rem',
             background: voiceState.isRecording ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)',
             border: `1px solid ${voiceState.isRecording ? 'rgba(239, 68, 68, 0.4)' : 'rgba(56, 189, 248, 0.4)'}`,
+            opacity: loading ? 0.7 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer'
           }}
+          disabled={loading || chatbotProcessing}
         >
           {voiceState.isRecording ? 'Stop Recording' : 'Start Recording your question!'}
         </button>
@@ -316,25 +320,34 @@ const Chat: React.FC = () => {
               className="form-control"
               rows={4}
               placeholder="Type your question here..."
-              style={{ width: '100%', resize: 'vertical' }}
+              style={{ 
+                width: '100%', 
+                resize: 'vertical',
+                opacity: loading ? 0.7 : 1
+              }}
+              disabled={loading || sttProcessing || chatbotProcessing}
             />
           </div>
           <button 
             type="submit" 
             className="ratingButton"
-            disabled={loading || !message.trim()}
-            style={{ width: '100%' }}
+            disabled={loading || !message.trim() || sttProcessing || chatbotProcessing}
+            style={{ 
+              width: '100%',
+              opacity: (loading || !message.trim() || sttProcessing || chatbotProcessing) ? 0.7 : 1,
+              cursor: (loading || !message.trim() || sttProcessing || chatbotProcessing) ? 'not-allowed' : 'pointer'
+            }}
           >
             {loading ? 'Sending...' : 'Send Question'}
           </button>
         </form>
 
         {error && (
-          <div className="alert alert-danger mt-3">
+          <div className="alert alert-danger" style={{ marginTop: '1rem' }}>
             {error}
           </div>
         )}
-        
+
         {response && (
           <div style={{ marginTop: '2rem' }}>
             <h4 className="gradient-text">Response:</h4>
@@ -351,10 +364,16 @@ const Chat: React.FC = () => {
             </div>
           </div>
         )}
-      {sttProcessing && <div className="loading-spinner" style={{ marginTop: '1rem' }} />}
-      {chatbotProcessing && <div className="loading-spinner" style={{ marginTop: '1rem' }} />}
-      </div>
 
+        {(sttProcessing || chatbotProcessing) && (
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <div className="loading-spinner" />
+            <p style={{ marginTop: '0.5rem', color: '#94a3b8' }}>
+              {sttProcessing ? 'Processing speech...' : 'Getting response...'}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

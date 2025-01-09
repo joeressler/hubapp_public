@@ -198,6 +198,9 @@ const Chat: React.FC = () => {
       const response = await apiService.sendAudioToVoiceService(formData);
       console.log('Received transcription:', response);
       setMessage(response.text);
+      var form = document.getElementById('chat-form') as HTMLFormElement;
+      var submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+      form.requestSubmit(submitButton);
     } catch (error) {
       console.error('Error transcribing audio:', error);
       setError('Failed to transcribe audio');
@@ -304,7 +307,7 @@ const Chat: React.FC = () => {
           {voiceState.isRecording ? 'Stop Recording' : 'Start Recording your question!'}
         </button>
 
-        <form onSubmit={handleSubmit}>
+        <form id="chat-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Your Question:</label>
             <textarea
@@ -348,8 +351,8 @@ const Chat: React.FC = () => {
             </div>
           </div>
         )}
-      {sttProcessing && <div className="loading-spinner" />}
-      {chatbotProcessing && <div className="loading-spinner" />}
+      {sttProcessing && <div className="loading-spinner" style={{ marginTop: '1rem' }} />}
+      {chatbotProcessing && <div className="loading-spinner" style={{ marginTop: '1rem' }} />}
       </div>
 
     </div>

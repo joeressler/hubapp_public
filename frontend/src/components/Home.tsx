@@ -157,8 +157,8 @@ const Home: React.FC = () => {
 
   const skills = [
     "React & TypeScript",
-    "Python Flask Apps",
-    "Go Microservices",
+    "Python Flask",
+    "Golang Microservices",
     "Full Stack Development",
     "Docker Compose & Containerization",
     "AWS EC2 Deployment",
@@ -167,12 +167,12 @@ const Home: React.FC = () => {
     "User Authentication & Security",
     "Vector Databases (LlamaIndex)",
     "OpenAI Integration",
-    "Speech-to-Text (Vosk) & Text-to-Speech (htgo-tts)",
+    "Speech-to-Text (Vosk)",
+    "Text-to-Speech",
+    "Audio Processing & Playback",
     "Nginx Reverse Proxy",
     "CI/CD Pipelines (Jenkins)",
-    "Cloud Infrastructure",
-    "Voice Recognition & Processing",
-    "Audio Processing & Playback"
+    "Cloud Infrastructure"
   ];
 
   return (

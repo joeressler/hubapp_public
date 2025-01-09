@@ -38,7 +38,7 @@ const Login: React.FC = () => {
   return (
     <div className="page-container">
       <h1 className="page-title">Log In</h1>
-      <div className="form-container">
+      <div className="form-container crystal-card">
         {error && <div className="alert alert-danger">{error}</div>}
         {flashMessage && (
           <div className="alert alert-info">
@@ -54,6 +54,7 @@ const Login: React.FC = () => {
               onChange={(e) => setUsername(e.target.value)}
               className="form-control"
               style={{ width: '100%' }}
+              autoFocus
             />
           </div>
           <div className="form-group">

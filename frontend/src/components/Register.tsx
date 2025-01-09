@@ -47,7 +47,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="register-container">
+    <div className="register-container crystal-card">
       <h1>Register</h1>
       {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
@@ -59,6 +59,7 @@ const Register: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="form-control"
             style={{ height: '2.5ch', width: '30ch' }}
+            autoFocus
           />
         </div>
         <div className="form-group">

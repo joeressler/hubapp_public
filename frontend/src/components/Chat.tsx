@@ -259,7 +259,7 @@ const Chat: React.FC = () => {
     <div className="page-container">
       <h1 className="page-title">Game Support Chat</h1>
       <p className="gradient-text" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        Get help with your favorite games using my GPT3.5 LLM RAG-powered support system.
+        Get help with your favorite games using my ChatGPT LLM RAG-powered support system.
       </p>
 
       <div className="feature-note" style={{ textAlign: 'center', marginBottom: '1rem', color: '#38bdf8' }}>

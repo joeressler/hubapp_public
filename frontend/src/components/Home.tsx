@@ -167,6 +167,7 @@ const Home: React.FC = () => {
     "User Authentication & Security",
     "Vector Databases (LlamaIndex)",
     "OpenAI Integration",
+    "Data Processing & Storage",
     "Speech-to-Text (Vosk)",
     "Text-to-Speech",
     "Audio Processing & Playback",

@@ -70,14 +70,27 @@ const Login: React.FC = () => {
           <button type="submit" className="ratingButton" style={{ width: '100%' }}>
             Log In
           </button>
-          <p style={{ 
+          <div style={{ 
             marginTop: '2rem', 
             textAlign: 'center',
-            color: '#e2e8f0',
-            textShadow: '0 0 5px rgba(56, 189, 248, 0.2)'
+            position: 'relative',
+            zIndex: 10
           }}>
-            Don't have an account? <Link to="/register" style={{ color: '#38bdf8' }}>Register here</Link>
-          </p>
+            <span style={{ color: '#e2e8f0', textShadow: '0 0 5px rgba(56, 189, 248, 0.2)' }}>
+              Don't have an account?{' '}
+              <Link 
+                to="/register" 
+                style={{ 
+                  color: '#38bdf8',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease'
+                }}
+                className="hover:text-sky-400 hover:underline"
+              >
+                Register here
+              </Link>
+            </span>
+          </div>
         </form>
       </div>
     </div>

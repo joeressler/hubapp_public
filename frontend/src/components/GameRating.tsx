@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService, Game } from '../services/api';
+import { RootState } from '../store';
 
 const GameRating: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -14,6 +16,7 @@ const GameRating: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     const getGameInfo = async () => {
@@ -55,7 +58,7 @@ const GameRating: React.FC = () => {
     setIsDirty(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!gameId) return;
     

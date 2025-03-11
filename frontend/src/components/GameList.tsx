@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { apiService, Game } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { RootState } from '../store';
+import { useSelector } from 'react-redux';
 
 const GameList: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
   const navigate = useNavigate();
 
   const isJoe = user?.username === 'joe';

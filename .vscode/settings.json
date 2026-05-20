@@ -3,5 +3,10 @@
     "python.analysis.extraPaths": [
         "./backend/utils"
     ],
-    "python.analysis.autoImportCompletions": true
+    "python.analysis.autoImportCompletions": true,
+    "cursorpyright.analysis.autoImportCompletions": true,
+    "cursorpyright.analysis.extraPaths": [
+        "./backend/utils"
+    ],
+    "python.languageServer": "None"
 }

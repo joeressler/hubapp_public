@@ -195,12 +195,14 @@ def chat():
 
 @app.route('/api/games/<int:game_id>/rate', methods=['POST'])
 @login_required
-def submit_rating():
-    data = request.json
-    game_id = data['gameId']
-    rating = data['rating']
+def submit_rating(game_id):
+    data = request.json or {}
+    rating = data.get('rating')
     fullclear = data.get('fullclear', False)
     user_id = session['user_id']
+
+    if rating is None:
+        return jsonify({'error': 'Missing rating'}), 400
 
     existing_rating = GameDB.lookup_user_rating(game_id, user_id)
     GameDB.add_game_rating(game_id, rating, fullclear, user_id, update=existing_rating is not None)

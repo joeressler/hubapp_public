@@ -159,6 +159,7 @@ const Home: React.FC = () => {
     "React & TypeScript",
     "Python Flask",
     "Golang Microservices",
+    "Applied AI Development",
     "Full Stack Development",
     "Docker Compose & Containerization",
     "AWS EC2 Deployment",
@@ -170,9 +171,8 @@ const Home: React.FC = () => {
     "Data Processing & Storage",
     "Speech-to-Text (Vosk)",
     "Text-to-Speech",
-    "Audio Processing & Playback",
     "Nginx Reverse Proxy",
-    "CI/CD Pipelines (Jenkins)",
+    "CI/CD Pipelines (Jenkins + Github Actions)",
     "Cloud Infrastructure"
   ];
 

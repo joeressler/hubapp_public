@@ -10,28 +10,31 @@ import {
   GameRating
 } from './components';
 import Register from './components/Register';
+import { AuthProvider } from './contexts/AuthContext';
 
 const App: React.FC = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="games" element={<GameList />} />
-          <Route path="chat" element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          } />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="games/:gameId/rate" element={
-            <ProtectedRoute>
-              <GameRating />
-            </ProtectedRoute>
-          } />
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="games" element={<GameList />} />
+            <Route path="chat" element={
+              <ProtectedRoute>
+                <Chat />
+              </ProtectedRoute>
+            } />
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="games/:gameId/rate" element={
+              <ProtectedRoute>
+                <GameRating />
+              </ProtectedRoute>
+            } />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 };

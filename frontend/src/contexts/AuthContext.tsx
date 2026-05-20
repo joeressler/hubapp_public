@@ -1,12 +1,11 @@
 import React, { createContext, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { apiService } from '../services/api';
-import { loginSuccess, logout } from '../store/authReducer';
+import { apiService, User } from '../services/api';
+import { loginSuccess, logout as logoutAction } from '../store/authReducer';
 import { RootState } from '../store';
-import { ThunkAction } from 'redux-thunk';
-import { AnyAction } from 'redux';
 
 interface AuthContextType {
+  user: User | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -25,32 +24,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
 
-  const login = (username: string, password: string): ThunkAction<void, RootState, unknown, AnyAction> => {
-    return async (dispatch) => {
-      try {
-        const response = await apiService.login(username, password);
-        dispatch(loginSuccess(response.user));
-      } catch (error) {
-        console.error('Login failed:', error);
-        throw error;
-      }
-    };
+  const login = async (username: string, password: string): Promise<void> => {
+    try {
+      const response = await apiService.login(username, password);
+      dispatch(loginSuccess(response.user));
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
   };
 
-  const logout = (): ThunkAction<void, RootState, unknown, AnyAction> => {
-    return async (dispatch) => {
-      try {
-        await apiService.logout();
-        dispatch(logout());
-      } catch (error) {
-        console.error('Logout failed:', error);
-        throw error;
-      }
-    };
+  const logout = async (): Promise<void> => {
+    try {
+      await apiService.logout();
+      dispatch(logoutAction());
+    } catch (error) {
+      console.error('Logout failed:', error);
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

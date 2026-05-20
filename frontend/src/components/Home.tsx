@@ -168,8 +168,6 @@ const Home: React.FC = () => {
     "User Authentication & Security",
     "Vector Databases (LlamaIndex)",
     "OpenAI Integration",
-    "Data Processing & Storage",
-    "Speech-to-Text (Kaldi)",
     "Nginx Reverse Proxy",
     "CI/CD Pipelines (Jenkins + Github Actions)",
     "Cloud Infrastructure"

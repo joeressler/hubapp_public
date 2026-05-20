@@ -158,7 +158,7 @@ const Home: React.FC = () => {
   const skills = [
     "React & TypeScript",
     "Python Flask",
-    "Golang Microservices",
+    "C# .NET Microservices",
     "Applied AI Development",
     "Full Stack Development",
     "Docker Compose & Containerization",
@@ -169,8 +169,7 @@ const Home: React.FC = () => {
     "Vector Databases (LlamaIndex)",
     "OpenAI Integration",
     "Data Processing & Storage",
-    "Speech-to-Text (Vosk)",
-    "Text-to-Speech",
+    "Speech-to-Text (Kaldi)",
     "Nginx Reverse Proxy",
     "CI/CD Pipelines (Jenkins + Github Actions)",
     "Cloud Infrastructure"

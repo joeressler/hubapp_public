@@ -1,36 +1,23 @@
-FROM golang:1.23.4-alpine3.19
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Install Vosk dependencies and ffmpeg with libmp3lame
-RUN apk add --no-cache \
-    gcc \
-    musl-dev \
-    pkgconfig \
-    alsa-lib-dev \
-    alsa-utils \
-    wget \
-    unzip \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     ffmpeg \
-    lame
+    && rm -rf /var/lib/apt/lists/*
 
-# Create audio directory
 RUN mkdir -p /app/audio && chmod 777 /app/audio
 
-# Copy Go module files
-COPY go.mod go.sum ./
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Download dependencies
-RUN go mod download
+COPY app ./app
+COPY dictionary ./dictionary
 
-# Copy the source code
-COPY . .
+ENV AUDIO_DIR=/app/audio
+ENV PYTHONUNBUFFERED=1
 
-# Build the application
-RUN CGO_ENABLED=1 go build -o main .
-
-# Expose port 8081
 EXPOSE 8081
 
-# Run the application
-CMD ["./main"] 
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8081"]

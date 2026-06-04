@@ -64,18 +64,32 @@ services:
       context: ./voice
       dockerfile: Dockerfile
     volumes:
-      - ./voice:/app/voice
-      - voice_audio:/app/voice/audio
-    command: ["go", "run", "/app/voice/main.go"]
+      - ./voice:/app
+      - voice_audio:/app/audio
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8081",
+        "--reload",
+      ]
     networks:
       - app-network
     ports:
       - "8081:8081"
     environment:
-      - CGO_ENABLED=1
-      - GIN_MODE=debug
+      - BACKEND_URL=http://backend:8080
+      - AUDIO_DIR=/app/audio
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/voice/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   app-network:

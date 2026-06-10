@@ -43,13 +43,11 @@ services:
       - VERIFY_URL=${VERIFY_URL}
       - PASSWORD_PIN=${PASSWORD_PIN}
       - SENTRY_DSN=${SENTRY_DSN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
       - ./backend:/app/backend
       - vosk-models:/app/models
       - ./backend/utils/vector_db/storage:/app/backend/utils/vector_db/storage
-    env_file:
-      - path: .env
-        required: false
     command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080", "--debug"]
     networks:
       - app-network

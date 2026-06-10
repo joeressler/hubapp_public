@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Box, Container, Typography, Grid, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import { GitHub, LinkedIn, Description, KeyboardArrowDown } from '@mui/icons-material';
 import { useInView } from 'react-intersection-observer';
@@ -115,8 +115,6 @@ const ProjectCard: React.FC<{ title: string; subtitle: string; href: string }> =
 const Home: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, 300]);
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -459,6 +457,7 @@ const Home: React.FC = () => {
               }}
             >
               <iframe
+                title="Steam store widget"
                 src="https://store.steampowered.com/widget/2928010/"
                 frameBorder="0"
                 width="646"

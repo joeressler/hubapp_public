@@ -17,11 +17,11 @@ RUN npm ci && npm cache clean --force
 COPY --chown=nodeuser:nodegroup . .
 RUN npm run build
 
-# Use a lightweight server to serve the static files
+# Serve static files and proxy /api + /voice to backend containers
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build /app/build /app/build
-COPY --from=build /app/package.json /app/package.json
-RUN npm install -g serve
+COPY --from=build /app/server.js /app/server.js
+RUN npm install --no-save express@^4.22.2 http-proxy-middleware@^2.0.9
 EXPOSE 3000
-CMD ["serve", "-s", "build"]
+CMD ["node", "server.js"]

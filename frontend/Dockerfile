@@ -17,8 +17,7 @@ RUN npm ci && npm cache clean --force
 COPY --chown=nodeuser:nodegroup . .
 RUN npm run build
 
-# Use a lightweight Express server that serves the static files
-# and proxies /api and /voice to the backend containers (see server.js)
+# Serve static files and proxy /api + /voice to backend containers
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build /app/build /app/build

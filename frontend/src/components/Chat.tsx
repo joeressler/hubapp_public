@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useRef } from 'react';
 import { apiService } from '../services/api';
-import { RootState } from '../store';
 
 const CHAT_CONTEXTS = ['wows', 'warcraft', 'lol'] as const;
 type ChatContext = typeof CHAT_CONTEXTS[number];
@@ -54,7 +52,6 @@ const Chat: React.FC = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const [sttProcessing, setSttProcessing] = useState(false);
   const [chatbotProcessing, setChatbotProcessing] = useState(false);
-  const user = useSelector((state: RootState) => state.auth.user);
 
   const handleContextChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newContext = e.target.value as ChatContext;

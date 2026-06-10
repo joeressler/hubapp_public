@@ -3,10 +3,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: production
     command: ["node", "server.js"]
-    volumes:
-      - ./frontend:/app/frontend
-      - frontend_node_modules:/app/node_modules
     environment:
       - NODE_ENV=production
       - HOST=0.0.0.0
@@ -19,13 +17,6 @@ services:
         condition: service_started
     ports:
       - "3000:3000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
   backend:
     build:
       context: ./backend
@@ -48,7 +39,8 @@ services:
       - vosk-models:/app/models
       - ./backend/utils/vector_db/storage:/app/backend/utils/vector_db/storage
     env_file:
-      - .env
+      - path: .env
+        required: false
     command: ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:app"]
     networks:
       - app-network

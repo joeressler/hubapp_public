@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService, Game } from '../services/api';
-import { RootState } from '../store';
 
 const GameRating: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -16,7 +14,6 @@ const GameRating: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     const getGameInfo = async () => {

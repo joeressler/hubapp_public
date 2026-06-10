@@ -1,4 +1,21 @@
-FROM node:18-alpine as build
+FROM node:18-alpine AS development
+WORKDIR /app
+
+RUN addgroup -g 1001 nodegroup && \
+    adduser -D -u 1001 -G nodegroup nodeuser && \
+    mkdir -p /app/node_modules && \
+    chown -R nodeuser:nodegroup /app
+
+USER nodeuser
+
+COPY --chown=nodeuser:nodegroup package*.json ./
+RUN npm ci && npm cache clean --force
+
+COPY --chown=nodeuser:nodegroup . .
+EXPOSE 3000
+CMD ["npm", "start"]
+
+FROM node:18-alpine AS build
 WORKDIR /app
 
 # Add node user and set permissions

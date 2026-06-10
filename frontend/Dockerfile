@@ -21,6 +21,7 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build /app/build /app/build
+COPY --from=build /app/package.json /app/package.json
 COPY --from=build /app/server.js /app/server.js
 RUN npm install --no-save express@^4.22.2 http-proxy-middleware@^2.0.9
 EXPOSE 3000

@@ -1,5 +1,18 @@
 import axios from 'axios';
 
+// CRA's package.json "proxy" only forwards to the backend. Voice runs on :8081,
+// so the browser must call it directly (voice service has CORS enabled).
+function resolveVoiceBaseUrl(): string {
+  if (process.env.REACT_APP_VOICE_URL) {
+    return process.env.REACT_APP_VOICE_URL;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:8081/voice';
+  }
+  // If running in production (e.g. on EC2 behind a reverse proxy), assume /voice is routed correctly
+  return '/voice';
+}
+
 export interface Game {
   id: number;
   name: string;
@@ -35,7 +48,7 @@ const api = axios.create({
 });
 
 const voiceApi = axios.create({
-  baseURL: '/voice',
+  baseURL: resolveVoiceBaseUrl(),
   headers: {
     'Content-Type': 'multipart/form-data',
   },

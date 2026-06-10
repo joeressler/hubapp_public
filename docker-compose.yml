@@ -3,7 +3,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    command: ["serve", "-s", "build"]
+    command: ["node", "server.js"]
     volumes:
       - ./frontend:/app/frontend
       - frontend_node_modules:/app/node_modules
@@ -66,16 +66,15 @@ services:
       context: ./voice
       dockerfile: Dockerfile
     volumes:
-      - ./voice:/app/voice
+      - ./voice:/app
       - voice_audio:/app/audio
-    command: ["./main"]
     networks:
       - app-network
     ports:
       - "8081:8081"
     environment:
-      - CGO_ENABLED=1
-      - GIN_MODE=release
+      - BACKEND_URL=http://backend:8080
+      - AUDIO_DIR=/app/audio
     depends_on:
       - backend
     healthcheck:

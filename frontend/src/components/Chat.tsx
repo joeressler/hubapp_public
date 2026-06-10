@@ -268,7 +268,7 @@ const Chat: React.FC = () => {
       </p>
 
       <div className="feature-note" style={{ textAlign: 'center', marginBottom: '1rem', color: '#38bdf8' }}>
-        Try out our new Go microservice-backed feature: Speak to the bot and have it talk back to you!
+        Try out our new FastAPI voice microservice: Speak to the bot and have it talk back to you!
       </div>
       
       <div className="form-container crystal-card">

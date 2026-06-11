@@ -1,3 +1,10 @@
 node_modules
+build
+coverage
 .git
-.gitignore 
+.gitignore
+*.md
+.env
+.env.*
+npm-debug.log*
+.DS_Store

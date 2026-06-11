@@ -159,6 +159,11 @@ def chat():
         base_path = "/app/backend/utils/vector_db/storage"
         response = ChatBot.get_response(question, context, base_path=base_path)
         print(f"ChatBot response: {response}")
+
+        if isinstance(response, dict) and response.get("error"):
+            error_code = response.get("code", "chat_error")
+            status_code = 503 if error_code == "rate_limit" else 500
+            return jsonify({"error": response["error"], "code": error_code}), status_code
         
         # Only log if we have a valid user_id
         if user_id:

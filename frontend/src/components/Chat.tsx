@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import axios from 'axios';
 import { apiService } from '../services/api';
 
 const CHAT_CONTEXTS = ['wows', 'warcraft', 'lol'] as const;
@@ -163,7 +164,13 @@ const Chat: React.FC = () => {
       setMessage('');  // Clear the input only on success
     } catch (err) {
       console.error('Chat error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to get response. Please try again.');
+      let errorMessage = 'Failed to get response. Please try again.';
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
       setChatbotProcessing(false);
@@ -260,6 +267,9 @@ const Chat: React.FC = () => {
   return (
     <div className="page-container">
       <h1 className="page-title">Game Support Chat</h1>
+      <p className="gradient-text" style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        Unfortunately reduced availability right now because OpenAI changed their API pricing model. I'm working on a solution.
+      </p>
       <p className="gradient-text" style={{ textAlign: 'center', marginBottom: '2rem' }}>
         Get help with your favorite games using my ChatGPT LLM RAG-powered support system.
       </p>

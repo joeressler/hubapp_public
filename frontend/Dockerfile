@@ -9,13 +9,14 @@ RUN addgroup -g 1001 nodegroup && \
 USER nodeuser
 
 COPY --chown=nodeuser:nodegroup package*.json ./
-RUN npm ci && npm cache clean --force
+RUN npm ci --no-audit --no-fund && npm cache clean --force
 
 COPY --chown=nodeuser:nodegroup . .
 
 # CRA treats ESLint warnings as errors when CI=true (common in Docker/CI environments)
 ENV CI=false
-RUN npm run build
+# Remove node_modules after build to keep this layer smaller on disk-constrained hosts
+RUN npm run build && rm -rf node_modules && npm cache clean --force
 
 FROM node:18-alpine AS production
 WORKDIR /app
@@ -25,7 +26,8 @@ RUN addgroup -g 1001 nodegroup && \
 
 COPY --from=build /app/build ./build
 COPY --from=build /app/server.js ./server.js
-RUN npm install --no-save express@^4.22.2 http-proxy-middleware@^2.0.9 && \
+RUN npm install --no-save --no-audit --no-fund express@^4.22.2 http-proxy-middleware@^2.0.9 && \
+    npm cache clean --force && \
     apk add --no-cache curl && \
     chown -R nodeuser:nodegroup /app
 
@@ -46,7 +48,7 @@ RUN addgroup -g 1001 nodegroup && \
 USER nodeuser
 
 COPY --chown=nodeuser:nodegroup package*.json ./
-RUN npm ci && npm cache clean --force
+RUN npm ci --no-audit --no-fund && npm cache clean --force
 
 COPY --chown=nodeuser:nodegroup . .
 EXPOSE 3000

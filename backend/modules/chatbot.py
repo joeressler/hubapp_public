@@ -5,12 +5,76 @@ from llama_index.core import (
     SimpleDirectoryReader,
     StorageContext,
     load_index_from_storage,
-    Document
+    Document,
+    Settings,
 )
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI as LlamaOpenAI
 import csv
 import os
 from dotenv import load_dotenv, find_dotenv
 from utils.vconnection import VConnection, VCursor
+
+RATE_LIMIT_MESSAGE = (
+    "The AI service is temporarily rate-limited. Please wait a moment and try again."
+)
+
+_index_cache = {}
+_settings_configured = False
+
+
+def _configure_llama_settings():
+    global _settings_configured
+    if _settings_configured:
+        return
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    Settings.embed_model = OpenAIEmbedding(
+        api_key=api_key,
+        max_retries=1,
+        timeout=30.0,
+    )
+    Settings.llm = LlamaOpenAI(
+        api_key=api_key,
+        model="gpt-3.5-turbo",
+        max_retries=1,
+        timeout=60.0,
+    )
+    _settings_configured = True
+
+
+def _is_rate_limit_error(exc):
+    if isinstance(exc, openai.RateLimitError):
+        return True
+
+    cause = exc
+    while cause is not None:
+        if isinstance(cause, openai.RateLimitError):
+            return True
+        response = getattr(cause, "response", None)
+        if response is not None and getattr(response, "status_code", None) == 429:
+            return True
+        cause = getattr(cause, "__cause__", None) or getattr(cause, "last_attempt", None)
+        if hasattr(cause, "exception"):
+            cause = cause.exception()
+        else:
+            break
+
+    return "429" in str(exc) or "rate limit" in str(exc).lower()
+
+
+def _get_query_engine(context, persist_dir):
+    if context not in _index_cache:
+        _configure_llama_settings()
+        storage_context = StorageContext.from_defaults(persist_dir=persist_dir)
+        index = load_index_from_storage(
+            storage_context,
+            embed_model=Settings.embed_model,
+        )
+        _index_cache[context] = index
+
+    return _index_cache[context].as_query_engine()
+
 
 class ChatBot:
     def __init__(self):
@@ -65,14 +129,15 @@ class ChatBot:
                 return {"error": f"Missing required files: {', '.join(missing_files)}"}
 
             try:
-                storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-                index = load_index_from_storage(storage_context)
-                query_engine = index.as_query_engine()
+                query_engine = _get_query_engine(context, PERSIST_DIR)
                 response = query_engine.query(question)
                 return response
             except Exception as storage_error:
+                if _is_rate_limit_error(storage_error):
+                    print(f"OpenAI rate limit hit: {storage_error}")
+                    return {"error": RATE_LIMIT_MESSAGE, "code": "rate_limit"}
+
                 print(f"Storage error: {str(storage_error)}")
-                # Try to read one of the JSON files to check permissions
                 try:
                     with open(os.path.join(PERSIST_DIR, "docstore.json"), 'r') as f:
                         f.read()
@@ -81,6 +146,10 @@ class ChatBot:
                 return {"error": f"Storage error: {str(storage_error)}"}
 
         except Exception as e:
+            if _is_rate_limit_error(e):
+                print(f"OpenAI rate limit hit: {e}")
+                return {"error": RATE_LIMIT_MESSAGE, "code": "rate_limit"}
+
             print(f"Error in get_response: {str(e)}")
             return {"error": str(e)}
 

@@ -39,6 +39,9 @@ const Navbar: React.FC = () => {
               <NavLink className="nav-link" to="/games">Game List</NavLink>
             </li>
             <li className="nav-item">
+              <NavLink className="nav-link" to="/digimon-dex">Digimon Dex</NavLink>
+            </li>
+            <li className="nav-item">
               <NavLink className="nav-link" to="/chat">Game Help Bot</NavLink>
             </li>
           </ul>

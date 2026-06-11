@@ -24,6 +24,15 @@ app.use(
   })
 );
 
+app.use(
+  '/digi-api',
+  createProxyMiddleware({
+    target: 'https://digi-api.com',
+    changeOrigin: true,
+    pathRewrite: { '^/digi-api': '' },
+  })
+);
+
 app.use(express.static(path.join(__dirname, 'build')));
 
 app.get('*', (req, res) => {

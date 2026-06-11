@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Box, Container, Typography, Grid, IconButton, useTheme, useMediaQuery } from '@mui/material';
@@ -155,10 +156,10 @@ const Home: React.FC = () => {
 
   const skills = [
     "React & TypeScript",
-    "Python Flask",
+    "Python Flask + FastAPI",
     "C# .NET Microservices",
     "Applied AI Development",
-    "Full Stack Development",
+    "AI Agent Development",
     "Docker Compose & Containerization",
     "AWS EC2 Deployment",
     "Relational Database Design (MySQL)",

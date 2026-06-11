@@ -16,4 +16,13 @@ module.exports = function (app) {
       changeOrigin: true,
     })
   );
+
+  app.use(
+    '/digi-api',
+    createProxyMiddleware({
+      target: 'https://digi-api.com',
+      changeOrigin: true,
+      pathRewrite: { '^/digi-api': '' },
+    })
+  );
 };

@@ -86,10 +86,18 @@ class User:
                 return False
 
     @staticmethod
+    def lookup_email(email):
+        with VConnection() as connection, VCursor(connection) as cursor:
+            sql = "SELECT * FROM user WHERE email = %s LIMIT 1"
+            cursor.execute(sql, (email,))
+            row = VCursor.get_row_as_json(cursor)
+            return row is not None
+
+    @staticmethod
     def lookupID(id):
         with VConnection() as connection, VCursor(connection) as cursor:
-            sql = f"SELECT * FROM gamedb.user WHERE id = {id} LIMIT 2"
-            cursor.execute(sql)
+            sql = "SELECT * FROM user WHERE id = %s LIMIT 2"
+            cursor.execute(sql, (id,))
             row = VCursor.get_row_as_json(cursor)
             if row:
                 return True

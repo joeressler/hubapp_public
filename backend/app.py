@@ -7,6 +7,7 @@ from functools import wraps
 from modules.users import User
 from modules.game_db import GameDB
 from modules.chatbot import ChatBot
+from modules.spell_ecs import decompose_spell
 from datetime import datetime
 import requests
 import base64
@@ -223,6 +224,28 @@ def get_game_info(game_id):
 @app.route('/api/health')
 def health():
     return jsonify({'status': 'healthy'})
+
+
+@app.route('/api/spell/decompose', methods=['POST'])
+@login_required
+def spell_decompose():
+    data = request.json or {}
+    spell_idea = data.get('spell_idea', '')
+
+    if not isinstance(spell_idea, str) or not spell_idea.strip():
+        return jsonify({'error': 'spell_idea is required and must be a non-empty string'}), 400
+
+    try:
+        result = decompose_spell(spell_idea)
+        return jsonify(result)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    except RuntimeError as exc:
+        app.logger.error('Spell ECS service error: %s', exc)
+        return jsonify({'error': str(exc)}), 502
+    except requests.RequestException as exc:
+        app.logger.error('Spell ECS service unavailable: %s', exc)
+        return jsonify({'error': 'Spell ECS service unavailable'}), 503
 
 # Serve React App - all non-API routes will serve index.html
 @app.route('/', defaults={'path': ''})

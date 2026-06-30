@@ -44,6 +44,7 @@ services:
       - PASSWORD_PIN=${PASSWORD_PIN}
       - SENTRY_DSN=${SENTRY_DSN}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SPELL_ECS_URL=http://spell-ecs:8082
     volumes:
       - ./backend:/app/backend
       - vosk-models:/app/models
@@ -51,6 +52,9 @@ services:
     command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080", "--debug"]
     networks:
       - app-network
+    depends_on:
+      spell-ecs:
+        condition: service_started
     ports:
       - "8080:8080"
     healthcheck:
@@ -114,8 +118,6 @@ services:
       ]
     networks:
       - app-network
-    ports:
-      - "8082:8082"
     environment:
       - HF_HOME=/app/models
       - GRANITE_MODEL_REPO=ibm-granite/granite-4.1-3b-GGUF

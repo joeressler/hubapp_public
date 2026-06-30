@@ -74,6 +74,32 @@ services:
       retries: 3
       start_period: 60s
 
+  spell-ecs:
+    build:
+      context: ./microservice
+      dockerfile: Dockerfile
+    volumes:
+      - ./microservice:/app
+      - granite_models:/app/models
+    networks:
+      - app-network
+    ports:
+      - "8082:8082"
+    environment:
+      - HF_HOME=/app/models
+      - GRANITE_MODEL_REPO=ibm-granite/granite-4.1-3b-GGUF
+      - GRANITE_MODEL_FILE=*Q4_K_M.gguf
+      - GRANITE_N_CTX=4096
+      - GRANITE_N_GPU_LAYERS=0
+      - GRANITE_MAX_TOKENS=1024
+      - DJANGO_DEBUG=0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
 
 networks:
   app-network:
@@ -83,3 +109,4 @@ volumes:
   frontend_node_modules:
   vosk-models:
   voice_audio:
+  granite_models:

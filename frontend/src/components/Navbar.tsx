@@ -19,18 +19,22 @@ const Navbar: React.FC = () => {
   return (
     <nav className="navbar navbar-expand-lg" role="navigation" data-bs-theme="dark">
       <div className="container-fluid">
-        <button 
-          className="navbar-toggler d-block d-lg-none d-xl-none" 
+        <button
+          type="button"
+          className="navbar-toggler d-block d-lg-none d-xl-none"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isOpen}
+          aria-controls="mobile-navigation"
         >
-          <span className="navbar-toggler-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1h15a.5.5 0 0 1 0 1H.5A.5.5 0 0 1 0 1.5zM0 7.5A.5.5 0 0 1 .5 7h15a.5.5 0 0 1 0 1H.5A.5.5 0 0 1 0 7.5zM.5 13a.5.5 0 0 1 0-1h15a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0 0z"/>
+          <span className="navbar-toggle-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </span>
         </button>
 
-        <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`}>
+        <div id="mobile-navigation" className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`}>
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <NavLink className="nav-link" to="/">Home</NavLink>

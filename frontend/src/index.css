@@ -287,10 +287,15 @@ html {
   color: #e2e8f0;
   background: transparent;
   box-shadow: none;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.navbar-toggler:focus {
-  box-shadow: none;
+.navbar-toggler:focus-visible {
+  box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.6);
 }
 
 .navbar-toggle-icon {

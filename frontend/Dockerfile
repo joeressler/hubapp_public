@@ -1,6 +1,11 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
+ARG REACT_APP_RECAPTCHA_PUBLIC_KEY
+ARG REACT_APP_SENTRY_DSN
+ENV REACT_APP_RECAPTCHA_PUBLIC_KEY=$REACT_APP_RECAPTCHA_PUBLIC_KEY
+ENV REACT_APP_SENTRY_DSN=$REACT_APP_SENTRY_DSN
+
 RUN addgroup -g 1001 nodegroup && \
     adduser -D -u 1001 -G nodegroup nodeuser && \
     mkdir -p /app/node_modules && \
@@ -26,7 +31,7 @@ RUN addgroup -g 1001 nodegroup && \
 
 COPY --from=build /app/build ./build
 COPY --from=build /app/server.js ./server.js
-RUN npm install --no-save --no-audit --no-fund express@^4.22.2 http-proxy-middleware@^2.0.9 && \
+RUN npm install --no-save --no-audit --no-fund express@^4.22.2 helmet@^8.0.0 http-proxy-middleware@^2.0.9 && \
     npm cache clean --force && \
     apk add --no-cache curl && \
     chown -R nodeuser:nodegroup /app

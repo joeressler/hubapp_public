@@ -70,6 +70,18 @@ export const apiService = {
     return response.data;
   },
 
+  async checkAuth(): Promise<User | null> {
+    try {
+      const response = await api.get<User | null>('/auth/check');
+      if (!response.data || typeof response.data.id !== 'number') {
+        return null;
+      }
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
   async getGames(): Promise<Game[]> {
     const response = await api.get<Game[]>('/games');
     return response.data;

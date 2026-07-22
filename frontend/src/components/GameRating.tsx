@@ -90,12 +90,12 @@ const GameRating: React.FC = () => {
   if (!gameInfo) {
     return (
       <div className="page-container">
-        <div className="form-container crystal-card">
+        <div className="form-container">
           <h2 className="page-title">Error Loading Game</h2>
-          <p style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          <p style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--color-text-muted)' }}>
             Unable to load game information.
           </p>
-          <Link to="/games" className="ratingButton" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+          <Link to="/games" className="btn btn-primary btn-block">
             Return to Game List
           </Link>
         </div>
@@ -106,12 +106,12 @@ const GameRating: React.FC = () => {
   return (
     <div className="page-container">
       <h2 className="page-title">Rate {gameInfo.name}</h2>
-      <div className="form-container crystal-card">
+      <div className="form-container">
         {error && <div className="alert alert-danger">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>
-              Rating (1-10): <span style={{ color: '#ef4444' }}>*</span>
+              Rating (1-10): <span style={{ color: 'var(--color-accent-red)' }}>*</span>
             </label>
             <input
               type="number"
@@ -122,12 +122,11 @@ const GameRating: React.FC = () => {
               onChange={handleInputChange}
               required
               className="form-control"
-              style={{ width: '100%' }}
               autoFocus
               disabled={isSubmitting}
             />
             {formData.rating < 1 || formData.rating > 10 ? (
-              <small style={{ color: '#ef4444' }}>Please enter a rating between 1 and 10</small>
+              <small style={{ color: 'var(--color-accent-red)' }}>Please enter a rating between 1 and 10</small>
             ) : null}
           </div>
           <div className="form-check" style={{ marginBottom: '1.5rem' }}>
@@ -148,9 +147,8 @@ const GameRating: React.FC = () => {
               className="form-check-label" 
               htmlFor="fullclear"
               style={{ 
-                color: '#e2e8f0',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                textShadow: '0 0 5px rgba(56, 189, 248, 0.2)'
+                color: 'var(--color-text)',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer'
               }}
             >
               Full Clear
@@ -159,7 +157,7 @@ const GameRating: React.FC = () => {
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button 
               type="submit" 
-              className="ratingButton" 
+              className="btn btn-primary"
               style={{ 
                 width: '100%',
                 opacity: isSubmitting ? 0.7 : 1,
@@ -171,11 +169,9 @@ const GameRating: React.FC = () => {
             </button>
             <Link 
               to="/games" 
-              className="ratingButton" 
+              className="btn btn-ghost"
               style={{ 
-                width: '100%', 
-                textAlign: 'center',
-                textDecoration: 'none',
+                width: '100%',
                 opacity: isSubmitting ? 0.7 : 1,
                 cursor: isSubmitting ? 'not-allowed' : 'pointer'
               }}

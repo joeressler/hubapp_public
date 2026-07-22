@@ -1,3 +1,5 @@
-from .chatbot import ChatBot
-from .users import User
-from .game_db import GameDB
+"""Domain modules package.
+
+Import concrete modules directly (e.g. ``modules.users``) to avoid loading
+heavy optional dependencies like LlamaIndex at package import time.
+"""

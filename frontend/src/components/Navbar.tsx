@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, ready, logout } = useAuth();
   const navigate = useNavigate();
 
   const closeMenu = () => setIsOpen(false);
@@ -71,7 +71,13 @@ const Navbar: React.FC = () => {
           </ul>
 
           <ul className="site-nav-auth">
-            {user ? (
+            {!ready ? (
+              <li>
+                <span className="site-nav-user" aria-hidden="true">
+                  …
+                </span>
+              </li>
+            ) : user ? (
               <>
                 <li>
                   <span className="site-nav-user">{user.username}</span>

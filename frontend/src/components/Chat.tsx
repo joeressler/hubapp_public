@@ -1,385 +1,503 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { apiService } from '../services/api';
 
 const CHAT_CONTEXTS = ['wows', 'warcraft', 'lol'] as const;
-type ChatContext = typeof CHAT_CONTEXTS[number];
+type ChatContext = (typeof CHAT_CONTEXTS)[number];
 
 interface GameContextInfo {
   value: ChatContext;
   label: string;
+  short: string;
   description: string;
+  prompts: string[];
 }
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  createdAt: number;
+}
+
+type ErrorKind = 'generic' | 'rate_limit' | 'auth' | 'voice';
 
 const GAME_CONTEXTS: GameContextInfo[] = [
   {
     value: 'wows',
     label: 'World of Warships',
-    description: 'Get help with World of Warships gameplay, features, and support'
+    short: 'WoWS',
+    description: 'FAQ help for ships, modes, and account support.',
+    prompts: [
+      'How do I reset my World of Warships password?',
+      'What is the difference between Random and Ranked battles?',
+      'How do premium ships work?',
+    ],
   },
   {
     value: 'warcraft',
     label: 'World of Warcraft',
-    description: 'Ask questions about World of Warcraft game mechanics and support'
+    short: 'WoW',
+    description: 'Mechanics and support answers grounded in WoW FAQ data.',
+    prompts: [
+      'How do I restore a deleted character?',
+      'What should I know about Mythic+ for beginners?',
+      'How do I transfer a character between realms?',
+    ],
   },
   {
     value: 'lol',
     label: 'League of Legends',
-    description: 'Get assistance with League of Legends gameplay and support'
-  }
+    short: 'LoL',
+    description: 'Gameplay and support guidance from League FAQ material.',
+    prompts: [
+      'How do I appeal an unfair ban?',
+      'What is the difference between Ranked Solo and Flex?',
+      'How do I report a player in-game?',
+    ],
+  },
 ];
 
-interface VoiceState {
-  isRecording: boolean;
-  audioStream: MediaStream | null;
-  audioContext: AudioContext | null;
-  processor: AudioWorkletNode | null;
+const emptyThreads = (): Record<ChatContext, ChatMessage[]> => ({
+  wows: [],
+  warcraft: [],
+  lol: [],
+});
+
+function createId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function extractChatError(err: unknown): { message: string; kind: ErrorKind } {
+  if (axios.isAxiosError(err)) {
+    const status = err.response?.status;
+    const data = err.response?.data as { error?: string; code?: string } | undefined;
+    if (status === 401) {
+      return {
+        message: 'Session expired. Please log in again to continue chatting.',
+        kind: 'auth',
+      };
+    }
+    if (data?.code === 'rate_limit' || status === 503) {
+      return {
+        message:
+          data?.error ||
+          'The AI service is temporarily rate-limited. Wait a moment, then try again.',
+        kind: 'rate_limit',
+      };
+    }
+    if (data?.error) {
+      return { message: data.error, kind: 'generic' };
+    }
+  }
+  if (err instanceof Error && err.message) {
+    return { message: err.message, kind: 'generic' };
+  }
+  return { message: 'Failed to get a response. Please try again.', kind: 'generic' };
+}
+
+function decodeAudioBase64(audioData: string): Blob {
+  const base64Data = audioData.includes(',') ? audioData.split(',')[1] : audioData;
+  const byteCharacters = atob(base64Data);
+  const byteArray = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i += 1) {
+    byteArray[i] = byteCharacters.charCodeAt(i);
+  }
+  return new Blob([byteArray], { type: 'audio/mp3' });
 }
 
 const Chat: React.FC = () => {
-  const [message, setMessage] = useState<string>('');
+  const [message, setMessage] = useState('');
   const [context, setContext] = useState<ChatContext>('wows');
-  const [response, setResponse] = useState<string | null>(null);
+  const [threads, setThreads] = useState(emptyThreads);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<ErrorKind>('generic');
   const [loading, setLoading] = useState(false);
-  const [descriptionState, setDescriptionState] = useState<'normal' | 'entering' | 'exiting'>('normal');
-  const [voiceState, setVoiceState] = useState<VoiceState>({
-    isRecording: false,
-    audioStream: null,
-    audioContext: null,
-    processor: null
-  });
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const [sttProcessing, setSttProcessing] = useState(false);
-  const [chatbotProcessing, setChatbotProcessing] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const threadEndRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const contextRef = useRef(context);
+  const voiceEnabledRef = useRef(voiceEnabled);
+  const loadingRef = useRef(false);
+  const sendQuestionRef = useRef<(rawText: string) => Promise<void>>(async () => undefined);
 
-  const handleContextChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newContext = e.target.value as ChatContext;
-    if (CHAT_CONTEXTS.includes(newContext as any)) {
-      setDescriptionState('exiting');
-      setTimeout(() => {
-        setContext(newContext);
-        setDescriptionState('entering');
-        setTimeout(() => {
-          setDescriptionState('normal');
-        }, 50);
-      }, 300);
-    }
+  contextRef.current = context;
+  voiceEnabledRef.current = voiceEnabled;
+
+  const activeContext = useMemo(
+    () => GAME_CONTEXTS.find((entry) => entry.value === context) ?? GAME_CONTEXTS[0],
+    [context]
+  );
+  const messages = threads[context];
+  const busy = loading || sttProcessing || isRecording;
+
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, loading, sttProcessing]);
+
+  useEffect(() => {
+    return () => {
+      mediaRecorderRef.current?.stop();
+      audioStreamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  const appendMessage = (ctx: ChatContext, entry: Omit<ChatMessage, 'id' | 'createdAt'>) => {
+    const next: ChatMessage = {
+      ...entry,
+      id: createId(),
+      createdAt: Date.now(),
+    };
+    setThreads((prev) => ({
+      ...prev,
+      [ctx]: [...prev[ctx], next],
+    }));
+    return next;
   };
 
   const playResponse = async (audioData: string) => {
-    try {
-      // Add validation for audio data
-      if (!audioData) {
-        throw new Error('No audio data received');
-      }
-
-      console.log('Audio data preview:', audioData.substring(0, 100));
-
-      // Create a Blob directly from the base64 data
-      let blob;
-      if (audioData.startsWith('data:audio/mp3;base64,')) {
-        // Data is already in data URI format
-        const base64Data = audioData.split(',')[1];
-        const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        
-        const byteArray = new Uint8Array(byteNumbers);
-        blob = new Blob([byteArray], { type: 'audio/mp3' });
-      } else {
-        // Handle plain base64 data
-        const byteCharacters = atob(audioData);
-        const byteNumbers = new Array(byteCharacters.length);
-        
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        
-        const byteArray = new Uint8Array(byteNumbers);
-        blob = new Blob([byteArray], { type: 'audio/mp3' });
-      }
-
-      // Validate blob size
-      if (blob.size === 0) {
-        throw new Error('Created audio blob is empty');
-      }
-      console.log('Created blob size:', blob.size, 'bytes');
-
-      // Create an object URL from the blob
-      const audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio();
-
-      // Add error handling for audio loading
-      audio.onerror = ((e: Event | string) => {
-        const target = (e instanceof Event ? e.currentTarget : audio) as HTMLAudioElement;
-        console.error('Audio loading error:', {
-          code: target.error?.code,
-          message: target.error?.message
-        });
-        URL.revokeObjectURL(audioUrl);
-        setError(`Failed to load audio: ${target.error?.message || 'Unknown error'}`);
-      });
-
-      // Clean up the object URL after playback
+    if (!audioData) {
+      throw new Error('No audio data received');
+    }
+    const blob = decodeAudioBase64(audioData);
+    if (blob.size === 0) {
+      throw new Error('Created audio blob is empty');
+    }
+    const audioUrl = URL.createObjectURL(blob);
+    const audio = new Audio(audioUrl);
+    await new Promise<void>((resolve, reject) => {
       audio.onended = () => {
         URL.revokeObjectURL(audioUrl);
+        resolve();
       };
-
-      // Set the source and load the audio
-      audio.src = audioUrl;
-      await audio.load();
-
-      // Log when audio is loaded
-      audio.onloadedmetadata = () => {
-        console.log('Audio metadata loaded. Duration:', audio.duration);
+      audio.onerror = () => {
+        URL.revokeObjectURL(audioUrl);
+        reject(new Error(audio.error?.message || 'Failed to load audio'));
       };
+      audio.play().catch(reject);
+    });
+  };
 
-      // Attempt to play the audio
-      await audio.play();
+  const sendQuestion = async (rawText: string) => {
+    const text = rawText.trim();
+    if (!text || loadingRef.current) return;
+
+    const active = contextRef.current;
+    setError(null);
+    setMessage('');
+    appendMessage(active, { role: 'user', content: text });
+    loadingRef.current = true;
+    setLoading(true);
+
+    try {
+      const result = await apiService.sendChatMessage(
+        text,
+        active,
+        voiceEnabledRef.current
+      );
+      appendMessage(active, { role: 'assistant', content: result.response });
+      if (voiceEnabledRef.current && result.audio) {
+        await playResponse(result.audio);
+      }
     } catch (err) {
-      console.error('Error playing audio:', err);
-      setError(`Failed to play audio response: ${err instanceof Error ? err.message : String(err)}`);
+      const parsed = extractChatError(err);
+      setError(parsed.message);
+      setErrorKind(parsed.kind);
+      appendMessage(active, {
+        role: 'system',
+        content: parsed.message,
+      });
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+      textareaRef.current?.focus();
     }
   };
+  sendQuestionRef.current = sendQuestion;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    await sendQuestion(message);
+  };
 
+  const handleContextChange = (next: ChatContext) => {
+    if (next === context || busy) return;
+    setContext(next);
     setError(null);
-    setLoading(true);
-    setChatbotProcessing(true);
-    
-    try {
-      const result = await apiService.sendChatMessage(message, context, true);
-      setResponse(result.response);
-      if (result.audio) {
-        await playResponse(result.audio);
-      }
-      setMessage('');  // Clear the input only on success
-    } catch (err) {
-      console.error('Chat error:', err);
-      let errorMessage = 'Failed to get response. Please try again.';
-      if (axios.isAxiosError(err) && err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-      setChatbotProcessing(false);
-    }
+  };
+
+  const clearThread = () => {
+    if (busy) return;
+    setThreads((prev) => ({ ...prev, [context]: [] }));
+    setError(null);
   };
 
   const handleAudioStop = async () => {
     if (audioChunksRef.current.length === 0) {
-      console.log('No audio data recorded');
-      setError('No audio data to send');
+      setError('No audio captured. Hold the mic a moment longer, then stop.');
+      setErrorKind('voice');
       return;
     }
 
-    console.log('Processing recorded audio data');
-    setSttProcessing(true); // Start STT processing animation
+    setSttProcessing(true);
+    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg' });
+    audioChunksRef.current = [];
 
-    // Create a blob from the recorded chunks
-    const audioBlob = new Blob(audioChunksRef.current, {
-      type: 'audio/ogg',
-    });
-    audioChunksRef.current = []; // Clear the chunks
-
-    console.log('Audio blob created:', audioBlob);
-
-    // Create a FormData object to send the audio file
     const formData = new FormData();
     formData.append('audio', audioBlob, 'audio.ogg');
-    formData.append('context', context);
+    formData.append('context', contextRef.current);
 
     try {
       const response = await apiService.sendAudioToVoiceService(formData);
-      console.log('Received transcription:', response);
-      setMessage(response.text);
-      var form = document.getElementById('chat-form') as HTMLFormElement;
-      var submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-      form.requestSubmit(submitButton);
-    } catch (error) {
-      console.error('Error transcribing audio:', error);
-      setError('Failed to transcribe audio');
+      const transcript = response.text?.trim();
+      if (!transcript) {
+        setError('Could not transcribe that clip. Try again in a quieter spot.');
+        setErrorKind('voice');
+        return;
+      }
+      setMessage(transcript);
+      await sendQuestionRef.current(transcript);
+    } catch {
+      setError('Voice transcription failed. Check the voice service and try again.');
+      setErrorKind('voice');
     } finally {
-      setSttProcessing(false); // End STT processing animation
+      setSttProcessing(false);
     }
   };
 
   const toggleRecording = async () => {
-    if (!voiceState.isRecording) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            sampleRate: 16000,
-            channelCount: 1,
-            echoCancellation: true,
-            noiseSuppression: true,
-          },
-        });
-        const mediaRecorder = new MediaRecorder(stream);
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-            console.log('Audio chunk recorded:', event.data);
-          }
-        };
-
-        mediaRecorder.onstop = handleAudioStop;
-
-        mediaRecorderRef.current = mediaRecorder;
-        mediaRecorder.start();
-        console.log('Recording started');
-
-        setVoiceState({
-          isRecording: true,
-          audioStream: stream,
-          audioContext: null,
-          processor: null,
-        });
-      } catch (err) {
-        console.error('Recording error:', err);
-        setError('Failed to start recording');
-      }
-    } else {
+    if (isRecording) {
       mediaRecorderRef.current?.stop();
-      voiceState.audioStream?.getTracks().forEach((track) => track.stop());
-      setVoiceState({
-        isRecording: false,
-        audioStream: null,
-        audioContext: null,
-        processor: null,
+      audioStreamRef.current?.getTracks().forEach((track) => track.stop());
+      audioStreamRef.current = null;
+      setIsRecording(false);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: 16000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
       });
-      console.log('Recording stopped');
+      const mediaRecorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      mediaRecorder.onstop = () => {
+        void handleAudioStop();
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      audioStreamRef.current = stream;
+      mediaRecorder.start();
+      setIsRecording(true);
+      setError(null);
+    } catch {
+      setError('Microphone access was blocked. Allow audio permissions to use voice input.');
+      setErrorKind('voice');
     }
   };
 
   return (
-    <div className="page-container">
-      <h1 className="page-title">Game Support Chat</h1>
-      <p style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
-        Reduced availability while OpenAI pricing changes are being handled. RAG help for WoWS, WoW, and LoL FAQs.
-      </p>
-      <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--color-accent)', fontFamily: 'var(--font-display)', fontSize: '0.95rem' }}>
-        Optional FastAPI voice I/O: speak to the bot and hear responses back.
-      </p>
-      
-      <div className="form-container">
-        <div className="chat-form-group">
-          <label>Select Game:</label>
-          <div className="chat-select-container">
-            <select 
-              value={context} 
-              onChange={handleContextChange}
-              className="chat-select"
-              disabled={loading || sttProcessing}
+    <div className="chat-page">
+      <header className="chat-header">
+        <div>
+          <p className="chat-kicker">Game Help Bot</p>
+          <h1 className="chat-title">FAQ RAG console</h1>
+          <p className="chat-lede">
+            Ask support-style questions against indexed FAQ data for WoWS, WoW, or LoL.
+            Availability can dip when OpenAI rate limits hit.
+          </p>
+        </div>
+        <div className="chat-header-actions">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={clearThread}
+            disabled={busy || messages.length === 0}
+          >
+            Clear thread
+          </button>
+        </div>
+      </header>
+
+      <div className="chat-context-tabs" role="tablist" aria-label="Game corpus">
+        {GAME_CONTEXTS.map((entry) => {
+          const selected = entry.value === context;
+          return (
+            <button
+              key={entry.value}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              className={`chat-context-tab${selected ? ' is-active' : ''}`}
+              onClick={() => handleContextChange(entry.value)}
+              disabled={busy && !selected}
             >
-              {GAME_CONTEXTS.map((ctx) => (
-                <option key={ctx.value} value={ctx.value}>
-                  {ctx.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="chat-description-wrapper">
-            {GAME_CONTEXTS.find(ctx => ctx.value === context)?.description && (
-              <div className={`chat-description ${descriptionState !== 'normal' ? descriptionState : ''}`}>
-                {GAME_CONTEXTS.find(ctx => ctx.value === context)?.description}
+              <span className="chat-context-short">{entry.short}</span>
+              <span className="chat-context-label">{entry.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="chat-context-desc">{activeContext.description}</p>
+
+      <section className="chat-shell" aria-label="Conversation">
+        <div className="chat-thread" aria-live="polite">
+          {messages.length === 0 && !loading && !sttProcessing ? (
+            <div className="chat-empty">
+              <div className="chat-empty-rings" aria-hidden="true">
+                <span />
+                <span />
+                <span />
               </div>
-            )}
-          </div>
+              <h2>Ready when you are</h2>
+              <p>
+                Pick a corpus above, then send a question or try a starter prompt for{' '}
+                {activeContext.short}.
+              </p>
+              <div className="chat-prompt-list">
+                {activeContext.prompts.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    className="chat-prompt"
+                    onClick={() => void sendQuestion(prompt)}
+                    disabled={busy}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              <ul className="chat-message-list">
+                {messages.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className={`chat-message chat-message--${entry.role}`}
+                  >
+                    <div className="chat-message-meta">
+                      {entry.role === 'user'
+                        ? 'You'
+                        : entry.role === 'assistant'
+                          ? 'Help Bot'
+                          : 'System'}
+                    </div>
+                    <div className="chat-message-body">{entry.content}</div>
+                  </li>
+                ))}
+                {(loading || sttProcessing) && (
+                  <li className="chat-message chat-message--assistant chat-message--pending">
+                    <div className="chat-message-meta">
+                      {sttProcessing ? 'Voice pipeline' : 'Help Bot'}
+                    </div>
+                    <div className="chat-message-body chat-pending">
+                      <span className="chat-pending-dot" />
+                      <span className="chat-pending-dot" />
+                      <span className="chat-pending-dot" />
+                      <span>
+                        {sttProcessing ? 'Transcribing speech…' : 'Querying vector index…'}
+                      </span>
+                    </div>
+                  </li>
+                )}
+              </ul>
+              <div ref={threadEndRef} />
+            </>
+          )}
         </div>
 
-        <button
-          onClick={toggleRecording}
-          className="voice-button"
-          style={{
-            marginBottom: '1rem',
-            background: voiceState.isRecording ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)',
-            border: `1px solid ${voiceState.isRecording ? 'rgba(239, 68, 68, 0.4)' : 'rgba(56, 189, 248, 0.4)'}`,
-            opacity: loading ? 0.7 : 1,
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-          disabled={loading || chatbotProcessing}
-        >
-          {voiceState.isRecording ? 'Stop Recording' : 'Start Recording your question!'}
-        </button>
-
-        <form id="chat-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Your Question:</label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="form-control"
-              rows={4}
-              placeholder="Type your question here..."
-              style={{ 
-                width: '100%', 
-                resize: 'vertical',
-                opacity: loading ? 0.7 : 1
-              }}
-              disabled={loading || sttProcessing || chatbotProcessing}
-            />
-          </div>
-          <button 
-            type="submit" 
-            className="btn btn-primary btn-block"
-            disabled={loading || !message.trim() || sttProcessing || chatbotProcessing}
-            style={{ 
-              opacity: (loading || !message.trim() || sttProcessing || chatbotProcessing) ? 0.7 : 1,
-              cursor: (loading || !message.trim() || sttProcessing || chatbotProcessing) ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Sending...' : 'Send Question'}
-          </button>
-        </form>
-
         {error && (
-          <div className="alert alert-danger" style={{ marginTop: '1rem' }}>
-            {error}
+          <div
+            className={`chat-banner${
+              errorKind === 'rate_limit' ? ' chat-banner--warn' : ' chat-banner--danger'
+            }`}
+            role="alert"
+          >
+            <strong>
+              {errorKind === 'rate_limit'
+                ? 'Rate limited'
+                : errorKind === 'auth'
+                  ? 'Auth required'
+                  : errorKind === 'voice'
+                    ? 'Voice issue'
+                    : 'Request failed'}
+            </strong>
+            <span>{error}</span>
           </div>
         )}
 
-        {response && (
-          <div style={{ marginTop: '2rem' }}>
-            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-accent)', margin: 0 }}>Response</h4>
-            <div style={{
-              padding: '1rem',
-              background: 'rgba(10, 15, 28, 0.5)',
-              borderRadius: '8px',
-              border: '1px solid rgba(56, 189, 248, 0.2)',
-              color: 'var(--color-text)',
-              marginTop: '1rem',
-              whiteSpace: 'pre-wrap'
-            }}>
-              {response}
-            </div>
+        <form className="chat-composer" onSubmit={handleSubmit}>
+          <div className="chat-composer-toolbar">
+            <label className="chat-toggle">
+              <input
+                type="checkbox"
+                checked={voiceEnabled}
+                onChange={(e) => setVoiceEnabled(e.target.checked)}
+                disabled={busy}
+              />
+              <span>Speak replies (TTS)</span>
+            </label>
+            <button
+              type="button"
+              className={`btn${isRecording ? ' btn-danger-soft' : ' btn-ghost'}`}
+              onClick={() => void toggleRecording()}
+              disabled={loading || sttProcessing}
+              aria-pressed={isRecording}
+            >
+              {isRecording ? 'Stop recording' : 'Voice question'}
+            </button>
           </div>
-        )}
 
-        {(sttProcessing || chatbotProcessing) && (
-          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-            <div className="loading-spinner" />
-            <p style={{ marginTop: '0.5rem', color: '#94a3b8' }}>
-              {sttProcessing ? 'Processing speech...' : 'Getting response...'}
-            </p>
+          <label className="visually-hidden" htmlFor="chat-input">
+            Your question
+          </label>
+          <textarea
+            id="chat-input"
+            ref={textareaRef}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="form-control chat-input"
+            rows={3}
+            placeholder={`Ask something about ${activeContext.label}…`}
+            disabled={loading || sttProcessing}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                void sendQuestion(message);
+              }
+            }}
+          />
+
+          <div className="chat-composer-footer">
+            <p className="chat-hint">Enter to send · Shift+Enter for newline</p>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={busy || !message.trim()}
+            >
+              {loading ? 'Sending…' : 'Send'}
+            </button>
           </div>
-        )}
-      </div>
+        </form>
+      </section>
     </div>
   );
 };
 
-export default Chat; 
+export default Chat;

@@ -3,13 +3,16 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const closeMenu = () => setIsOpen(false);
 
   const handleLogout = async () => {
     try {
       await logout();
+      closeMenu();
       navigate('/login');
     } catch (error) {
       console.error('Failed to log out:', error);
@@ -17,61 +20,73 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg" role="navigation" data-bs-theme="dark">
-      <div className="container-fluid">
+    <nav className="site-nav" role="navigation" aria-label="Primary">
+      <div className="site-nav-inner">
+        <NavLink className="site-nav-brand" to="/" onClick={closeMenu}>
+          Joseph <span>Ressler</span>
+        </NavLink>
+
         <button
           type="button"
-          className="navbar-toggler d-block d-lg-none d-xl-none"
-          onClick={() => setIsOpen(!isOpen)}
+          className="site-nav-toggle"
+          onClick={() => setIsOpen((open) => !open)}
           aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isOpen}
-          aria-controls="mobile-navigation"
+          aria-controls="primary-navigation"
         >
-          <span className="navbar-toggle-icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+            {isOpen ? (
+              <path d="M6 6l12 12M18 6L6 18" />
+            ) : (
               <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </span>
+            )}
+          </svg>
         </button>
 
-        <div id="mobile-navigation" className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`}>
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/">Home</NavLink>
+        <div
+          id="primary-navigation"
+          className={`site-nav-menu${isOpen ? ' is-open' : ''}`}
+        >
+          <ul className="site-nav-links">
+            <li>
+              <NavLink to="/" end onClick={closeMenu}>
+                Home
+              </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/games">Game List</NavLink>
+            <li>
+              <NavLink to="/games" onClick={closeMenu}>
+                Game List
+              </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/digimon-dex">Digimon Dex</NavLink>
+            <li>
+              <NavLink to="/digimon-dex" onClick={closeMenu}>
+                Digimon Dex
+              </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/chat">Game Help Bot</NavLink>
+            <li>
+              <NavLink to="/chat" onClick={closeMenu}>
+                Game Help Bot
+              </NavLink>
             </li>
           </ul>
-          
-          <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+
+          <ul className="site-nav-auth">
             {user ? (
-              <li className="nav-item user-dropdown">
-                <span className="nav-link" style={{ 
-                  color: '#38bdf8',
-                  textShadow: '0 0 5px rgba(56, 189, 248, 0.3)',
-                  cursor: 'pointer'
-                }}>
-                  {user.username}
-                </span>
-                <div className="user-dropdown-content">
-                  <button 
-                    onClick={handleLogout}
-                    className="user-dropdown-button"
-                  >
+              <>
+                <li>
+                  <span className="site-nav-user">{user.username}</span>
+                </li>
+                <li>
+                  <button type="button" className="site-nav-logout" onClick={handleLogout}>
                     Log Out
                   </button>
-                </div>
-              </li>
+                </li>
+              </>
             ) : (
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/login">Log In</NavLink>
+              <li>
+                <NavLink to="/login" onClick={closeMenu}>
+                  Log In
+                </NavLink>
               </li>
             )}
           </ul>
@@ -81,4 +96,4 @@ const Navbar: React.FC = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;

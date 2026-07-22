@@ -16,7 +16,7 @@ const DigimonInfoPanel: React.FC<DigimonInfoPanelProps> = ({ detail }) => {
 
   return (
     <div className="digimon-info-panel crystal-card">
-      <h2 className="digimon-info-name gradient-text">{detail.name}</h2>
+      <h2 className="digimon-info-name">{detail.name}</h2>
       <div className="digimon-info-meta">
         {level && <span><strong>Level:</strong> {level}</span>}
         {attribute && <span><strong>Attribute:</strong> {attribute}</span>}
@@ -50,7 +50,7 @@ const DigimonInfoPanel: React.FC<DigimonInfoPanelProps> = ({ detail }) => {
           {detail.skills.length > 5 && (
             <button
               type="button"
-              className="digimon-skills-toggle neon-button"
+              className="digimon-skills-toggle btn"
               onClick={() => setShowAllSkills(!showAllSkills)}
             >
               {showAllSkills ? 'Show fewer' : `Show all ${detail.skills.length} skills`}

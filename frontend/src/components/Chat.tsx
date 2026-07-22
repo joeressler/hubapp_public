@@ -267,18 +267,14 @@ const Chat: React.FC = () => {
   return (
     <div className="page-container">
       <h1 className="page-title">Game Support Chat</h1>
-      <p className="gradient-text" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        Unfortunately reduced availability right now because OpenAI changed their API pricing model. I'm working on a solution.
+      <p style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+        Reduced availability while OpenAI pricing changes are being handled. RAG help for WoWS, WoW, and LoL FAQs.
       </p>
-      <p className="gradient-text" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        Get help with your favorite games using my ChatGPT LLM RAG-powered support system.
+      <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--color-accent)', fontFamily: 'var(--font-display)', fontSize: '0.95rem' }}>
+        Optional FastAPI voice I/O: speak to the bot and hear responses back.
       </p>
-
-      <div className="feature-note" style={{ textAlign: 'center', marginBottom: '1rem', color: '#38bdf8' }}>
-        Try out our new FastAPI voice microservice: Speak to the bot and have it talk back to you!
-      </div>
       
-      <div className="form-container crystal-card">
+      <div className="form-container">
         <div className="chat-form-group">
           <label>Select Game:</label>
           <div className="chat-select-container">
@@ -339,10 +335,9 @@ const Chat: React.FC = () => {
           </div>
           <button 
             type="submit" 
-            className="ratingButton"
+            className="btn btn-primary btn-block"
             disabled={loading || !message.trim() || sttProcessing || chatbotProcessing}
             style={{ 
-              width: '100%',
               opacity: (loading || !message.trim() || sttProcessing || chatbotProcessing) ? 0.7 : 1,
               cursor: (loading || !message.trim() || sttProcessing || chatbotProcessing) ? 'not-allowed' : 'pointer'
             }}
@@ -359,13 +354,13 @@ const Chat: React.FC = () => {
 
         {response && (
           <div style={{ marginTop: '2rem' }}>
-            <h4 className="gradient-text">Response:</h4>
+            <h4 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-accent)', margin: 0 }}>Response</h4>
             <div style={{
               padding: '1rem',
               background: 'rgba(10, 15, 28, 0.5)',
               borderRadius: '8px',
               border: '1px solid rgba(56, 189, 248, 0.2)',
-              color: '#e2e8f0',
+              color: 'var(--color-text)',
               marginTop: '1rem',
               whiteSpace: 'pre-wrap'
             }}>

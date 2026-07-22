@@ -52,15 +52,9 @@ const GameList: React.FC = () => {
       <h1 className="page-title">Game Ratings</h1>
       <div className="table-container">
         <div className="table-responsive">
-          <table className="table table-dark table-hover">
-            <caption style={{ 
-              color: '#e2e8f0',
-              textAlign: 'center',
-              captionSide: 'top',
-              marginBottom: '1rem',
-              textShadow: '0 0 5px rgba(56, 189, 248, 0.2)'
-            }}>
-              Here is a list of games I have rated along with my 100% status for them and the game's average user rating.
+          <table className="table">
+            <caption>
+              Games I have rated, plus 100% status and average community scores.
             </caption>
             <thead>
               <tr>

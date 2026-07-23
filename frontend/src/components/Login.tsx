@@ -24,7 +24,8 @@ const Login: React.FC = () => {
     setError('');
     try {
       await login(username, password);
-      const returnURL = (location.state as any)?.returnURL || '/';
+      const returnURL =
+        (location.state as { returnURL?: string } | null)?.returnURL || '/';
       navigate(returnURL);
     } catch (err) {
       if (err instanceof Error) {
@@ -38,63 +39,43 @@ const Login: React.FC = () => {
   return (
     <div className="page-container">
       <h1 className="page-title">Log In</h1>
-      <div className="form-container crystal-card">
+      <div className="form-container">
         {error && <div className="alert alert-danger">{error}</div>}
-        {flashMessage && (
-          <div className="alert alert-info">
-            {flashMessage}
-          </div>
-        )}
+        {flashMessage && <div className="alert alert-info">{flashMessage}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Username:</label>
+            <label htmlFor="login-username">Username</label>
             <input
+              id="login-username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="form-control"
-              style={{ width: '100%' }}
               autoFocus
+              autoComplete="username"
             />
           </div>
           <div className="form-group">
-            <label>Password:</label>
+            <label htmlFor="login-password">Password</label>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="form-control"
-              style={{ width: '100%' }}
+              autoComplete="current-password"
             />
           </div>
-          <button type="submit" className="ratingButton" style={{ width: '100%' }}>
+          <button type="submit" className="btn btn-primary btn-block">
             Log In
           </button>
-          <div style={{ 
-            marginTop: '2rem', 
-            textAlign: 'center',
-            position: 'relative',
-            zIndex: 10
-          }}>
-            <span style={{ color: '#e2e8f0', textShadow: '0 0 5px rgba(56, 189, 248, 0.2)' }}>
-              Don't have an account?{' '}
-              <Link 
-                to="/register" 
-                style={{ 
-                  color: '#38bdf8',
-                  textDecoration: 'none',
-                  transition: 'all 0.3s ease'
-                }}
-                className="hover:text-sky-400 hover:underline"
-              >
-                Register here
-              </Link>
-            </span>
-          </div>
+          <p style={{ marginTop: '1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            Don&apos;t have an account? <Link to="/register">Register here</Link>
+          </p>
         </form>
       </div>
     </div>
   );
 };
 
-export default Login; 
+export default Login;

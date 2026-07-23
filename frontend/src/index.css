@@ -1284,8 +1284,11 @@ textarea {
 @media (max-width: 720px) {
   .home-hero-rings {
     opacity: 0.28;
-    right: -8%;
-    top: 8%;
+    right: auto;
+    left: 50%;
+    top: 10%;
+    width: min(220px, 56vw);
+    transform: translateX(-50%);
   }
 
   .home-hero-content {

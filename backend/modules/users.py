@@ -88,8 +88,8 @@ class User:
     @staticmethod
     def lookupID(id):
         with VConnection() as connection, VCursor(connection) as cursor:
-            sql = f"SELECT * FROM gamedb.user WHERE id = {id} LIMIT 2"
-            cursor.execute(sql)
+            sql = "SELECT * FROM user WHERE id = %s LIMIT 2"
+            cursor.execute(sql, (id,))
             row = VCursor.get_row_as_json(cursor)
             if row:
                 return True

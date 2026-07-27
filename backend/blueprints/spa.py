@@ -27,10 +27,29 @@ def serve(path):
 
 
 def register_debug_routes(app):
-    """Optional diagnostics; enabled when ENABLE_DEBUG_ROUTES=1."""
+    """Optional diagnostics; enabled when ENABLE_DEBUG_ROUTES=1.
+
+    These routes expose filesystem layout and must never be enabled in
+    publicly reachable production deployments.
+    """
+    from flask import g
+
+    from utils.security import is_production
+
+    if is_production():
+        app.logger.warning(
+            'ENABLE_DEBUG_ROUTES is ignored in production for security'
+        )
+        return
+
+    def _debug_authorized():
+        # Require an authenticated session even in non-production.
+        return g.user is not None
 
     @app.route('/debug/static')
     def debug_static():
+        if not _debug_authorized():
+            return jsonify({'error': 'Authentication required'}), 401
         try:
             static_files = []
             static_folder = app.static_folder or ''
@@ -54,6 +73,8 @@ def register_debug_routes(app):
 
     @app.route('/api/debug/storage')
     def debug_storage():
+        if not _debug_authorized():
+            return jsonify({'error': 'Authentication required'}), 401
         try:
             paths_to_check = [
                 '/app/utils/vector_db/storage',
@@ -69,8 +90,6 @@ def register_debug_routes(app):
                         if os.path.exists(path) and os.path.isdir(path)
                         else []
                     ),
-                    'cwd': os.getcwd(),
-                    'absolute_path': os.path.abspath(path),
                 }
                 for path in paths_to_check
             }

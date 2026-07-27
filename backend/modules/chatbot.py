@@ -114,7 +114,7 @@ class ChatBot:
             
             if not os.path.exists(PERSIST_DIR):
                 print(f"Storage directory not found: {PERSIST_DIR}")
-                return {"error": f"Storage directory {PERSIST_DIR} not found"}
+                return {"error": "Chat knowledge base is unavailable", "code": "storage_missing"}
 
             required_files = [
                 "default__vector_store.json",
@@ -126,7 +126,7 @@ class ChatBot:
             missing_files = [f for f in required_files if not os.path.exists(os.path.join(PERSIST_DIR, f))]
             if missing_files:
                 print(f"Missing required files in {PERSIST_DIR}: {missing_files}")
-                return {"error": f"Missing required files: {', '.join(missing_files)}"}
+                return {"error": "Chat knowledge base is incomplete", "code": "storage_incomplete"}
 
             try:
                 query_engine = _get_query_engine(context, PERSIST_DIR)
@@ -143,7 +143,7 @@ class ChatBot:
                         f.read()
                 except Exception as read_error:
                     print(f"File read error: {str(read_error)}")
-                return {"error": f"Storage error: {str(storage_error)}"}
+                return {"error": "Unable to query chat knowledge base", "code": "storage_error"}
 
         except Exception as e:
             if _is_rate_limit_error(e):
@@ -151,7 +151,7 @@ class ChatBot:
                 return {"error": RATE_LIMIT_MESSAGE, "code": "rate_limit"}
 
             print(f"Error in get_response: {str(e)}")
-            return {"error": str(e)}
+            return {"error": "Unable to generate a chat response", "code": "chat_error"}
 
     @staticmethod
     def log(context, question, answer, user_id):

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
+import Recaptcha from './Recaptcha';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [recaptchaToken, setRecaptchaToken] = useState('');
   const navigate = useNavigate();
 
   const validatePassword = (value: string): string | null => {
@@ -33,7 +35,7 @@ const Register: React.FC = () => {
     }
 
     try {
-      await apiService.register(username, password, email);
+      await apiService.register(username, password, email, recaptchaToken || undefined);
       navigate('/login?message=' + encodeURIComponent('Registration successful. Please log in.'));
     } catch (err) {
       if (err instanceof Error) {
@@ -95,6 +97,10 @@ const Register: React.FC = () => {
               <li>Contain at least 1 special character (!@#$%^&amp;)</li>
             </ul>
           </div>
+          <Recaptcha
+            onVerify={setRecaptchaToken}
+            onExpire={() => setRecaptchaToken('')}
+          />
           <button type="submit" className="btn btn-primary btn-block">
             Register
           </button>

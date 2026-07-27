@@ -4,6 +4,8 @@ import os
 
 import requests
 
+from utils.security import MAX_TTS_TEXT_LENGTH, validate_tts_url
+
 VECTOR_STORAGE_PATH = os.environ.get(
     'VECTOR_STORAGE_PATH',
     '/app/backend/utils/vector_db/storage',
@@ -49,11 +51,34 @@ def answer_question(question, context, user_id, with_voice=False):
     return payload
 
 
+def _voice_service_headers():
+    headers = {}
+    key = os.environ.get('INTERNAL_SERVICE_KEY', '')
+    if key:
+        headers['X-Internal-Service-Key'] = key
+    return headers
+
+
 def _synthesize_speech(text):
+    if not validate_tts_url(TTS_URL):
+        raise ChatServiceError('TTS service misconfigured', status_code=500, code='tts_error')
+
+    if len(text) > MAX_TTS_TEXT_LENGTH:
+        text = text[:MAX_TTS_TEXT_LENGTH]
+
     try:
-        tts_response = requests.post(TTS_URL, json={'text': text}, timeout=60)
+        tts_response = requests.post(
+            TTS_URL,
+            json={'text': text},
+            headers=_voice_service_headers(),
+            timeout=60,
+        )
     except requests.RequestException as exc:
-        raise ChatServiceError('TTS service unavailable', status_code=502, code='tts_error') from exc
+        raise ChatServiceError(
+            'TTS service unavailable',
+            status_code=502,
+            code='tts_error',
+        ) from exc
 
     if tts_response.status_code != 200:
         raise ChatServiceError('TTS service error', status_code=502, code='tts_error')

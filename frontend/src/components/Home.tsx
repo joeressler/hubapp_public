@@ -174,6 +174,8 @@ const Home: React.FC = () => {
             width="646"
             height="190"
             loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           />
         </div>
       </section>

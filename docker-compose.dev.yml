@@ -10,7 +10,7 @@ services:
       - frontend_node_modules:/app/node_modules
     environment:
       - NODE_ENV=development
-      - REACT_APP_VOICE_URL=http://localhost:8081/voice
+      - REACT_APP_RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY:-}
       - WDS_SOCKET_PORT=0
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
@@ -37,18 +37,22 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PWD=${MYSQL_PWD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev-only-insecure-key-do-not-use-in-production}
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-dev-internal-service-key}
+      - VOICE_SERVICE_URL=http://voice:8081
+      - TTS_URL=http://voice:8081/tts
       - RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY}
       - RECAPTCHA_PRIVATE_KEY=${RECAPTCHA_PRIVATE_KEY}
       - VERIFY_URL=${VERIFY_URL}
       - PASSWORD_PIN=${PASSWORD_PIN}
       - SENTRY_DSN=${SENTRY_DSN}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
     volumes:
       - ./backend:/app/backend
       - vosk-models:/app/models
       - ./backend/utils/vector_db/storage:/app/backend/utils/vector_db/storage
-    command: ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8080", "--debug"]
+    command: ["python", "-m", "flask", "--app", "app:app", "run", "--host=0.0.0.0", "--port=8080", "--debug"]
     networks:
       - app-network
     ports:
@@ -83,6 +87,9 @@ services:
     environment:
       - BACKEND_URL=http://backend:8080
       - AUDIO_DIR=/app/audio
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-dev-internal-service-key}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - VOICE_DISABLE_DOCS=false
     depends_on:
       - backend
     healthcheck:

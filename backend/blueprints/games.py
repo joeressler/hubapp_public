@@ -1,7 +1,9 @@
 from flask import Blueprint, current_app, jsonify, request, session
 
 from authz import login_required
+from extensions import limiter
 from modules.game_db import GameDB
+from utils.security import safe_error_message, validate_rating
 
 games_bp = Blueprint('games', __name__, url_prefix='/api/games')
 
@@ -16,7 +18,7 @@ def get_games():
         return jsonify(games)
     except Exception:
         current_app.logger.exception('Failed to list games')
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': safe_error_message()}), 500
 
 
 @games_bp.route('/<int:game_id>', methods=['GET'])
@@ -28,19 +30,20 @@ def get_game_info(game_id):
         return jsonify(game_info[0])
     except Exception:
         current_app.logger.exception('Failed to fetch game %s', game_id)
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': safe_error_message()}), 500
 
 
 @games_bp.route('/<int:game_id>/rate', methods=['POST'])
 @login_required
+@limiter.limit('20 per minute')
 def submit_rating(game_id):
     data = request.get_json(silent=True) or {}
-    rating = data.get('rating')
-    fullclear = data.get('fullclear', False)
+    rating = validate_rating(data.get('rating'))
+    fullclear = bool(data.get('fullclear', False))
     user_id = session['user_id']
 
     if rating is None:
-        return jsonify({'error': 'Missing rating'}), 400
+        return jsonify({'error': 'Rating must be an integer between 1 and 10'}), 400
 
     try:
         existing_rating = GameDB.lookup_user_rating(game_id, user_id)
@@ -54,4 +57,4 @@ def submit_rating(game_id):
         return jsonify({'message': 'Rating submitted successfully'})
     except Exception:
         current_app.logger.exception('Failed to rate game %s', game_id)
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': safe_error_message()}), 500

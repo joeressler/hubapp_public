@@ -12,10 +12,18 @@ const LIST_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const DETAIL_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 export function proxyDigiUrl(url: string): string {
-  if (url.startsWith('https://digi-api.com')) {
-    return url.replace('https://digi-api.com', '/digi-api');
+  if (!url || typeof url !== 'string') {
+    return '';
   }
-  return url;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('/digi-api/')) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('https://digi-api.com/')) {
+    return trimmed.replace('https://digi-api.com', '/digi-api');
+  }
+  // Reject unexpected remote/data/javascript URLs from third-party payloads.
+  return '';
 }
 
 export interface DigimonListItem {

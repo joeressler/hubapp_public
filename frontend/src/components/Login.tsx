@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import Recaptcha from './Recaptcha';
+import { safeReturnUrl } from '../services/api';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -23,9 +26,11 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError('');
     try {
-      await login(username, password);
-      const returnURL =
-        (location.state as { returnURL?: string } | null)?.returnURL || '/';
+      await login(username, password, recaptchaToken || undefined);
+      const returnURL = safeReturnUrl(
+        (location.state as { returnURL?: string } | null)?.returnURL,
+        '/'
+      );
       navigate(returnURL);
     } catch (err) {
       if (err instanceof Error) {
@@ -66,6 +71,10 @@ const Login: React.FC = () => {
               autoComplete="current-password"
             />
           </div>
+          <Recaptcha
+            onVerify={setRecaptchaToken}
+            onExpire={() => setRecaptchaToken('')}
+          />
           <button type="submit" className="btn btn-primary btn-block">
             Log In
           </button>

@@ -7,7 +7,7 @@ import { RootState } from '../store';
 interface AuthContextType {
   user: User | null;
   ready: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, recaptchaToken?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -31,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const restoreSession = async () => {
       try {
+        await apiService.initializeCsrf();
         const sessionUser = await apiService.checkAuth();
         if (!cancelled && sessionUser) {
           dispatch(loginSuccess(sessionUser));
@@ -49,8 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [dispatch]);
 
-  const login = async (username: string, password: string): Promise<void> => {
-    const response = await apiService.login(username, password);
+  const login = async (
+    username: string,
+    password: string,
+    recaptchaToken?: string
+  ): Promise<void> => {
+    const response = await apiService.login(username, password, recaptchaToken);
     dispatch(loginSuccess(response.user));
   };
 

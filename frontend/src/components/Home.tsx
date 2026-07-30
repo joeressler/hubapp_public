@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import josephImage from '../assets/joseph.jpg';
+import PageMeta from './PageMeta';
+import { DEFAULT_DESCRIPTION } from '../seo/site';
 
 const skills = [
   'React & TypeScript',
@@ -50,6 +52,12 @@ const fadeUp = {
 const Home: React.FC = () => {
   return (
     <div className="home-page">
+      <PageMeta
+        title="Joseph Ressler | Full-Stack Portfolio"
+        description={DEFAULT_DESCRIPTION}
+        path="/"
+        type="profile"
+      />
       <section className="home-hero" aria-label="Introduction">
         <div className="home-hero-media" aria-hidden="true">
           <img src={josephImage} alt="" />

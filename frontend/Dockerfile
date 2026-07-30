@@ -31,6 +31,9 @@ RUN addgroup -g 1001 nodegroup && \
 COPY --chown=nodeuser:nodegroup package*.json ./
 COPY --from=build --chown=nodeuser:nodegroup /app/build ./build
 COPY --from=build --chown=nodeuser:nodegroup /app/server.js ./server.js
+COPY --from=build --chown=nodeuser:nodegroup /app/seoPrerender.js ./seoPrerender.js
+COPY --from=build --chown=nodeuser:nodegroup /app/seoHost.js ./seoHost.js
+COPY --from=build --chown=nodeuser:nodegroup /app/seoSitemap.js ./seoSitemap.js
 
 RUN npm ci --omit=dev --no-audit --no-fund && \
     npm cache clean --force && \

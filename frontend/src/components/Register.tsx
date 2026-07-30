@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import Recaptcha from './Recaptcha';
+import PageMeta from './PageMeta';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -48,6 +49,12 @@ const Register: React.FC = () => {
 
   return (
     <div className="page-container">
+      <PageMeta
+        title="Register | Joseph Ressler"
+        description="Create an account on Joseph Ressler’s portfolio app."
+        path="/register"
+        noIndex
+      />
       <h1 className="page-title">Register</h1>
       <div className="form-container">
         {error && <div className="alert alert-danger">{error}</div>}

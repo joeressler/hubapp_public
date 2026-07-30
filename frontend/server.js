@@ -1,7 +1,9 @@
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const helmet = require('helmet');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { injectPrerender } = require('./seoPrerender');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,6 +11,29 @@ const HOST = process.env.HOST || '0.0.0.0';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://backend:8080';
 const VOICE_SERVICE_URL = process.env.VOICE_SERVICE_URL || 'http://voice:8081';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const BUILD_DIR = path.join(__dirname, 'build');
+const INDEX_HTML_PATH = path.join(BUILD_DIR, 'index.html');
+
+let indexHtmlTemplate = null;
+
+function loadIndexHtmlTemplate() {
+  if (!indexHtmlTemplate) {
+    indexHtmlTemplate = fs.readFileSync(INDEX_HTML_PATH, 'utf8');
+  }
+  return indexHtmlTemplate;
+}
+
+function sendPrerenderedIndex(req, res) {
+  try {
+    const html = injectPrerender(loadIndexHtmlTemplate(), req.path);
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (err) {
+    console.error('Failed to prerender index HTML:', err);
+    res.sendFile(INDEX_HTML_PATH);
+  }
+}
 
 app.disable('x-powered-by');
 
@@ -75,7 +100,8 @@ app.use(
   })
 );
 
-app.use(express.static(path.join(__dirname, 'build'), {
+app.use(express.static(BUILD_DIR, {
+  index: false,
   setHeaders(res, filePath) {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache');
@@ -84,7 +110,7 @@ app.use(express.static(path.join(__dirname, 'build'), {
 }));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  sendPrerenderedIndex(req, res);
 });
 
 app.listen(PORT, HOST, () => {

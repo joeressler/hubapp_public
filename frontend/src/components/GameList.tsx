@@ -3,6 +3,7 @@ import { apiService, Game } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import { useSelector } from 'react-redux';
+import PageMeta from './PageMeta';
 
 const GameList: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
@@ -36,9 +37,18 @@ const GameList: React.FC = () => {
     navigate(`/games/${gameId}/rate`);
   };
 
+  const pageMeta = (
+    <PageMeta
+      title="Game Ratings | Joseph Ressler"
+      description="Browse Joseph Ressler’s rated games with scores, full-clear tracking, and community averages."
+      path="/games"
+    />
+  );
+
   if (loading) {
     return (
       <div className="page-container">
+        {pageMeta}
         <h1 className="page-title">Game Ratings</h1>
         <div className="loading-container">
           <div className="loading-spinner" />
@@ -49,6 +59,7 @@ const GameList: React.FC = () => {
 
   return (
     <div className="page-container">
+      {pageMeta}
       <h1 className="page-title">Game Ratings</h1>
       <div className="table-container">
         <div className="table-responsive">

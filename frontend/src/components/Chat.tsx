@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { apiService } from '../services/api';
+import PageMeta from './PageMeta';
 
 const CHAT_CONTEXTS = ['wows', 'warcraft', 'lol'] as const;
 type ChatContext = (typeof CHAT_CONTEXTS)[number];
@@ -313,6 +314,12 @@ const Chat: React.FC = () => {
 
   return (
     <div className="chat-page">
+      <PageMeta
+        title="Game Help Bot | Joseph Ressler"
+        description="RAG chat over World of Warships, World of Warcraft, and League of Legends FAQ corpora."
+        path="/chat"
+        noIndex
+      />
       <header className="chat-header">
         <div>
           <p className="chat-kicker">Game Help Bot</p>

@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Recaptcha from './Recaptcha';
 import { safeReturnUrl } from '../services/api';
+import PageMeta from './PageMeta';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -43,6 +44,12 @@ const Login: React.FC = () => {
 
   return (
     <div className="page-container">
+      <PageMeta
+        title="Log In | Joseph Ressler"
+        description="Sign in to Joseph Ressler’s portfolio app."
+        path="/login"
+        noIndex
+      />
       <h1 className="page-title">Log In</h1>
       <div className="form-container">
         {error && <div className="alert alert-danger">{error}</div>}

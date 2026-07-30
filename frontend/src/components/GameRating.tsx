@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService, Game } from '../services/api';
+import PageMeta from './PageMeta';
 
 const GameRating: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -76,9 +77,20 @@ const GameRating: React.FC = () => {
     }
   };
 
+  const ratingPath = `/games/${gameId ?? ''}/rate`;
+  const ratingMeta = (
+    <PageMeta
+      title={gameInfo ? `Rate ${gameInfo.name} | Joseph Ressler` : 'Rate Game | Joseph Ressler'}
+      description="Submit a game rating on Joseph Ressler’s portfolio app."
+      path={ratingPath}
+      noIndex
+    />
+  );
+
   if (isLoading) {
     return (
       <div className="page-container">
+        {ratingMeta}
         <h2 className="page-title">Loading Game...</h2>
         <div className="loading-container">
           <div className="loading-spinner" />
@@ -90,6 +102,7 @@ const GameRating: React.FC = () => {
   if (!gameInfo) {
     return (
       <div className="page-container">
+        {ratingMeta}
         <div className="form-container">
           <h2 className="page-title">Error Loading Game</h2>
           <p style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--color-text-muted)' }}>
@@ -105,6 +118,7 @@ const GameRating: React.FC = () => {
 
   return (
     <div className="page-container">
+      {ratingMeta}
       <h2 className="page-title">Rate {gameInfo.name}</h2>
       <div className="form-container">
         {error && <div className="alert alert-danger">{error}</div>}

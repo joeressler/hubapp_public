@@ -5,11 +5,14 @@ import {
   DigimonListItem,
   fetchDigimonDetail,
   fetchDigimonList,
+  getEnglishDescription,
 } from '../services/digiApi';
 import DigimonSelector from './digimon/DigimonSelector';
 import DigimonScene from './digimon/DigimonScene';
 import DigimonInfoPanel from './digimon/DigimonInfoPanel';
 import DigimonSceneLoader from './digimon/DigimonSceneLoader';
+import PageMeta from './PageMeta';
+import { truncateMetaDescription } from '../seo/site';
 
 const DEFAULT_DIGIMON = 'Agumon';
 
@@ -92,9 +95,28 @@ const DigimonDex: React.FC = () => {
     navigate(`/digimon-dex/${encodeURIComponent(name)}`);
   };
 
+  const activeName = detail?.name ?? (urlName ? decodeURIComponent(urlName) : DEFAULT_DIGIMON);
+  const digimonDescription = truncateMetaDescription(
+    detail
+      ? getEnglishDescription(detail) ||
+          `View ${activeName} in Joseph Ressler’s Digimon Dex — 3D evolution chamber with lineage and details.`
+      : 'Explore Digimon evolutions in an interactive 3D chamber with search, lineage, and digivice-style loading.'
+  );
+  const digimonPath = urlName
+    ? `/digimon-dex/${encodeURIComponent(decodeURIComponent(urlName))}`
+    : '/digimon-dex';
+  const digimonTitle = urlName
+    ? `${activeName} | Digimon Dex | Joseph Ressler`
+    : 'Digimon Dex | Joseph Ressler';
+
   if (listLoading) {
     return (
       <div className="digimon-dex-page">
+        <PageMeta
+          title="Digimon Dex | Joseph Ressler"
+          description="Explore Digimon evolutions in an interactive 3D chamber with search, lineage, and digivice-style loading."
+          path="/digimon-dex"
+        />
         <h1 className="page-title">Digimon Dex</h1>
         <div className="loading-container">
           <div className="loading-spinner" />
@@ -105,6 +127,11 @@ const DigimonDex: React.FC = () => {
 
   return (
     <div className="digimon-dex-page">
+      <PageMeta
+        title={digimonTitle}
+        description={digimonDescription}
+        path={digimonPath}
+      />
       <h1 className="page-title">Digimon Dex</h1>
 
       <DigimonSelector

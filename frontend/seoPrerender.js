@@ -3,11 +3,9 @@
  * Kept in sync with frontend/src/seo/site.ts and PageMeta usage.
  */
 
-const SITE_ORIGIN = (
-  process.env.PUBLIC_URL ||
-  'https://www.josepharessler.com'
-).replace(/\/$/, '');
+const { CANONICAL_ORIGIN, canonicalUrl } = require('./seoHost');
 
+const SITE_ORIGIN = CANONICAL_ORIGIN;
 const SITE_NAME = 'Joseph Ressler';
 const DEFAULT_IMAGE = `${SITE_ORIGIN}/og-image.jpg`;
 
@@ -32,7 +30,7 @@ function page({ path, title, description, bodyHtml, noIndex = false, type = 'web
     noIndex,
     type,
     image: DEFAULT_IMAGE,
-    url: `${SITE_ORIGIN}${path === '/' ? '/' : path}`,
+    url: canonicalUrl(path),
   };
 }
 
@@ -211,12 +209,24 @@ function replaceMetaByAttr(html, attrName, attrValue, content) {
   );
 }
 
+function injectCanonical(html, url) {
+  const tag = `<link rel="canonical" href="${escapeHtml(url)}"/>`;
+  if (/<link\s+rel="canonical"/i.test(html)) {
+    return html.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, tag);
+  }
+  return html.replace(
+    /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i,
+    (match) => `${match}${tag}`
+  );
+}
+
 function buildMetaBlock(entry) {
   const robots = entry.noIndex ? 'noindex, nofollow' : 'index, follow';
 
   return [
     `<title>${escapeHtml(entry.title)}</title>`,
     `<meta name="description" content="${escapeHtml(entry.description)}"/>`,
+    `<link rel="canonical" href="${escapeHtml(entry.url)}"/>`,
     `<meta name="robots" content="${robots}"/>`,
     `<meta property="og:type" content="${escapeHtml(entry.type)}"/>`,
     `<meta property="og:site_name" content="${escapeHtml(SITE_NAME)}"/>`,
@@ -231,8 +241,11 @@ function buildMetaBlock(entry) {
   ].join('');
 }
 
-function injectPrerender(html, pathname) {
-  const entry = resolvePage(pathname);
+function injectPrerender(html, pathname, options = {}) {
+  const entry = { ...resolvePage(pathname) };
+  if (options.forceNoIndex) {
+    entry.noIndex = true;
+  }
   let next = html;
 
   // Prefer comment markers when present (dev / non-minified shells).
@@ -244,6 +257,7 @@ function injectPrerender(html, pathname) {
   } else {
     next = next.replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(entry.title)}</title>`);
     next = replaceMetaByAttr(next, 'name', 'description', entry.description);
+    next = injectCanonical(next, entry.url);
     next = replaceMetaByAttr(
       next,
       'name',
@@ -286,4 +300,5 @@ module.exports = {
   resolvePage,
   injectPrerender,
   normalizePath,
+  canonicalUrl,
 };

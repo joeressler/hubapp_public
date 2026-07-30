@@ -12,6 +12,9 @@ services:
       - NODE_ENV=production
       - HOST=0.0.0.0
       - PUBLIC_URL=https://www.josepharessler.com
+      - CANONICAL_ORIGIN=https://www.josepharessler.com
+      - SEO_APEX_HOST=josepharessler.com
+      - SEO_MIRROR_HOSTS=aws.josepharessler.com,gcr.josepharessler.com
       - BACKEND_URL=http://backend:8080
       - VOICE_SERVICE_URL=http://voice:8081
     user: "1001:1001"

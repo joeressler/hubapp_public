@@ -4,6 +4,14 @@ const path = require('path');
 const helmet = require('helmet');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { injectPrerender } = require('./seoPrerender');
+const {
+  CANONICAL_ORIGIN,
+  requestHost,
+  isMirrorHost,
+  shouldRedirectToCanonical,
+  canonicalUrl,
+} = require('./seoHost');
+const { buildRobotsTxt, buildSitemapXml } = require('./seoSitemap');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,7 +33,10 @@ function loadIndexHtmlTemplate() {
 
 function sendPrerenderedIndex(req, res) {
   try {
-    const html = injectPrerender(loadIndexHtmlTemplate(), req.path);
+    const host = requestHost(req);
+    const html = injectPrerender(loadIndexHtmlTemplate(), req.path, {
+      forceNoIndex: isMirrorHost(host),
+    });
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html);
@@ -36,6 +47,21 @@ function sendPrerenderedIndex(req, res) {
 }
 
 app.disable('x-powered-by');
+
+app.use((req, res, next) => {
+  const host = requestHost(req);
+
+  if (shouldRedirectToCanonical(host)) {
+    const target = canonicalUrl(req.path, req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
+    return res.redirect(301, target);
+  }
+
+  if (isMirrorHost(host)) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
+
+  return next();
+});
 
 app.use(
   helmet({
@@ -100,6 +126,28 @@ app.use(
   })
 );
 
+app.get('/robots.txt', (req, res) => {
+  const host = requestHost(req);
+  res.type('text/plain').send(buildRobotsTxt(isMirrorHost(host)));
+});
+
+app.get('/sitemap.xml', async (req, res) => {
+  const host = requestHost(req);
+  if (isMirrorHost(host)) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
+  try {
+    const xml = await buildSitemapXml();
+    res
+      .type('application/xml')
+      .set('Cache-Control', 'public, max-age=3600')
+      .send(xml);
+  } catch (err) {
+    console.error('Failed to build sitemap:', err);
+    res.status(500).type('text/plain').send('Sitemap unavailable');
+  }
+});
+
 app.use(express.static(BUILD_DIR, {
   index: false,
   setHeaders(res, filePath) {
@@ -115,4 +163,5 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, HOST, () => {
   console.log(`Frontend server listening on http://${HOST}:${PORT}`);
+  console.log(`Canonical origin: ${CANONICAL_ORIGIN}`);
 });

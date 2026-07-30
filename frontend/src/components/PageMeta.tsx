@@ -4,7 +4,7 @@ import {
   DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE,
   SITE_NAME,
-  SITE_ORIGIN,
+  canonicalUrl,
 } from '../seo/site';
 
 export type PageMetaProps = {
@@ -24,13 +24,13 @@ const PageMeta: React.FC<PageMetaProps> = ({
   noIndex = false,
   type = 'website',
 }) => {
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const url = `${SITE_ORIGIN}${normalizedPath === '/' ? '/' : normalizedPath}`;
+  const url = canonicalUrl(path);
 
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
+      <link rel="canonical" href={url} />
       <meta
         name="robots"
         content={noIndex ? 'noindex, nofollow' : 'index, follow'}

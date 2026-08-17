@@ -48,6 +48,7 @@ const STATIC_PAGES = [
           <ul>
             <li><a href="/digimon-dex">Digimon Dex</a> — interactive 3D evolution chamber</li>
             <li><a href="/games">Game Ratings</a> — shared scores and full-clear tracking</li>
+            <li><a href="/repos">Featured Repositories</a> — curated GitHub projects</li>
             <li><a href="/chat">Game Help Bot</a> — RAG chat over game FAQ corpora</li>
             <li><a href="/Ressler_Joseph_Resume.pdf">Resume (PDF)</a></li>
           </ul>
@@ -79,6 +80,21 @@ const STATIC_PAGES = [
       <article>
         <h1>Game Ratings</h1>
         <p>Shared game list with scores, full-clear tracking, and authenticated ratings.</p>
+        <p><a href="/">Back to Joseph Ressler portfolio</a></p>
+      </article>
+    `,
+  }),
+  page({
+    path: '/repos',
+    title: 'Featured Repositories | Joseph Ressler',
+    description:
+      'Curated GitHub repositories from Joseph Ressler — self-hosted tools and full-stack projects with source links and detailed write-ups.',
+    bodyHtml: `
+      <article>
+        <h1>Featured Repositories</h1>
+        <p>Curated GitHub repositories behind Joseph Ressler&apos;s portfolio — including this site and standalone tools.</p>
+        <p><a href="https://github.com/joeressler/hubapp_public">Joseph Ressler Hub App</a> — full-stack portfolio hub (Digimon Dex, RAG chat, game ratings).</p>
+        <p><a href="https://github.com/joeressler/npc-catalog">NPC Catalog</a> — self-hosted D&amp;D Dungeon Master toolkit.</p>
         <p><a href="/">Back to Joseph Ressler portfolio</a></p>
       </article>
     `,

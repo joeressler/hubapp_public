@@ -59,6 +59,11 @@ const Navbar: React.FC = () => {
               </NavLink>
             </li>
             <li>
+              <NavLink to="/repos" onClick={closeMenu}>
+                Repos
+              </NavLink>
+            </li>
+            <li>
               <NavLink to="/digimon-dex" onClick={closeMenu}>
                 Digimon Dex
               </NavLink>

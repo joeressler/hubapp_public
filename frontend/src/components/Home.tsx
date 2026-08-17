@@ -42,6 +42,12 @@ const features = [
     description: 'Shared game list with scores, full-clear tracking, and authenticated ratings.',
     to: '/games',
   },
+  {
+    index: '04',
+    title: 'Featured Repositories',
+    description: 'Curated GitHub projects with source links and expandable write-ups.',
+    to: '/repos',
+  },
 ];
 
 const fadeUp = {
@@ -112,7 +118,7 @@ const Home: React.FC = () => {
       <section className="home-section" aria-labelledby="featured-heading">
         <div className="home-section-header">
           <h2 id="featured-heading">Featured builds</h2>
-          <p>Live surfaces in this app — each one demonstrates a different slice of the stack.</p>
+          <p>Live surfaces in this app and curated GitHub repositories — each one demonstrates a different slice of the stack.</p>
         </div>
 
         <div className="feature-list">

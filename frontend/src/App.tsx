@@ -11,6 +11,7 @@ import {
 } from './components';
 import Register from './components/Register';
 import DigimonDex from './components/DigimonDex';
+import FeaturedRepos from './components/FeaturedRepos';
 import { AuthProvider } from './contexts/AuthContext';
 
 const App: React.FC = () => {
@@ -21,6 +22,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="games" element={<GameList />} />
+            <Route path="repos" element={<FeaturedRepos />} />
             <Route path="digimon-dex" element={<DigimonDex />} />
             <Route path="digimon-dex/:name" element={<DigimonDex />} />
             <Route path="chat" element={

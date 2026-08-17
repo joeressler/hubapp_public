@@ -11,7 +11,7 @@ const DIGI_API_LIST =
 
 const SITEMAP_CACHE_TTL_MS = Number(process.env.SITEMAP_CACHE_TTL_MS || 24 * 60 * 60 * 1000);
 
-const STATIC_PATHS = ['/', '/games', '/digimon-dex'];
+const STATIC_PATHS = ['/', '/games', '/repos', '/digimon-dex'];
 
 let digimonCache = {
   names: /** @type {string[]} */ ([]),
